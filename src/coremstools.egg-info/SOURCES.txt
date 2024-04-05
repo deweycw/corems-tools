@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+src/coremstools/__init__.py
+src/coremstools/features.py
+src/coremstools.egg-info/PKG-INFO
+src/coremstools.egg-info/SOURCES.txt
+src/coremstools.egg-info/dependency_links.txt
+src/coremstools.egg-info/requires.txt
+src/coremstools.egg-info/top_level.txt
