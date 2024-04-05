@@ -1,5 +1,5 @@
-from pandas import DataFrame, read_csv
-from numpy import mean, std
+from pandas import DataFrame, read_csv, unique
+from numpy import mean, std, array, zeros, shape, where
 from tqdm import tqdm
 
 class Features:
@@ -160,10 +160,7 @@ class Features:
 
                     self.results.loc[i,'Low Conf. Gap'] = True
 
-    def VGapFill(self):
-
-        from numpy import array, zeros, shape, where, any
-        from pandas import unique
+    def GapFill(self):
 
         self.results['>1 Peak w/in Uncertainty'] = None
 
