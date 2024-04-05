@@ -1,4 +1,6 @@
 dist/*
 env/
-*.workspace
-
+*-workspace
+*.egg-info
+*.pyc
+*cpython*

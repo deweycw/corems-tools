@@ -41,13 +41,13 @@ if __name__ == '__main__':
     data_dir='./testdata/'
 
 
-    samplelist = [data_dir+f for f in os.listdir(data_dir) if '.csv' in f]
+    samplelist = [data_dir+f for f in os.listdir(data_dir) if ('.csv' in f) and ('feature' not in f)]
 
     features = lcms.Features()
 
     features.Align(samplelist)
-    features.GapFill()
-    featurelist.to_csv(data_dir + './feature_list.csv')
+    features.VGapFill()
+    features.results.to_csv(data_dir + './new-feature_list.csv')
     #OHNratios(featurelist)
     '''
 
