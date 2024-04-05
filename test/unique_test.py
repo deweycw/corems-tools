@@ -7,76 +7,11 @@ import os
 import pandas as pd
 import time
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 from coremstools import features as lcms
 
 
 
 
-def gapfill(featurelist):
-    featurelist['gapfill']=False
-    featurelist['gapfill flag']=False
-    for i, row in featurelist.iterrows():
-        resolution=row['Resolving Power']
-        mass=row['Calibrated m/z']
-        time=row['Time']
-        mrange=[mass*(1-2/resolution),mass*(1+2/resolution)]
-        matches=featurelist[(featurelist['Calibrated m/z']>mrange[0])&(featurelist['Calibrated m/z']<mrange[1])&(featurelist['Time']==time)]
-        if(len(matches)>1):
-            featurelist.loc[i,'gapfill']=True
-            featurelist.loc[i,featurelist.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
-            if featurelist.loc[i,'Confidence Score']<max(matches['Confidence Score']):
-                featurelist.loc[i,'gapfill flag']=True
-    return(featurelist)
-
-def gapfill2(featurelist):
-    """
-    Fills gaps in 'featurelist' pandas DataFrame intensities based on calibrated m/z and resolving power.
-
-    Args:
-        featurelist: A pandas DataFrame with columns 'Resolving Power', 'Calibrated m/z',
-                    'Time', and multiple 'Intensity' columns.
-
-    Returns:
-        A pandas DataFrame with a new 'gapfill' column indicating if a gap was filled
-        and the filled intensity values (sum of matching rows) in the 'Intensity' columns.
-    """
-
-    resolution = featurelist['Resolving Power']
-    mass = featurelist['Calibrated m/z']
-    time = featurelist['Time']
-    mrange = [(1 - 2/resolution) * mass, (1 + 2/resolution) * mass]
-
-    # Vectorized filtering: find rows within mass range and matching time
-    matches = featurelist[(featurelist['Calibrated m/z'] >= mrange[0]) &
-                        (featurelist['Calibrated m/z'] <= mrange[1]) &
-                        (featurelist['Time'] == time)]
-
-    print(matches.columns)
-
-    # Vectorized gap filling: create new DataFrame with gapfilled intensities
-    intensity_cols = featurelist.filter(like='Intensity').columns
-    gapfilled_df = (matches.groupby(['Calibrated m/z', 'Time'])
-                    .agg(gapfill=(matches[intensity_cols] == 0).any(), *[(col, 'sum') for col in intensity_cols])
-                    .reset_index()
-    )
-
-   # gapfilled_df = (
-
-   #     matches.groupby(['Calibrated m/z', 'Time']).agg(gapfill=(matches[intensity_cols] == 0).any(), *[(col, 'sum') for col in intensity_cols])
-   #     .reset_index()
-   # )
-
-
-    # Update original DataFrame with gapfill flag and summed intensities
-    #featurelist.update(gapfilled_df[['gapfill']])
-    featurelist.update(gapfilled_df[['gapfill']]
-                      .merge(gapfilled_df[intensity_cols].groupby(['Resolving Power', 'Calibrated m/z', 'Time']).sum(),
-                            on=['Resolving Power', 'Calibrated m/z', 'Time'],
-                            how='left'))
-
-    return featurelist
 
 def OHNratios(featurelist):
     # Calculate atomic stoichiometries and Nominal Oxidation State of Carbon (NOSC)
@@ -103,30 +38,16 @@ if __name__ == '__main__':
 
     #### Change file settings here
     global data_dir
-    data_dir='/Users/christiandewey/Code/coremstools/test/testdata/'
+    data_dir='./testdata/'
 
-    global dfiletype
-    dfiletype='.raw'
-
-    ##### End user input
-
-    starttime = time.time()
-
-    #featurelist=pd.read_csv(data_dir+featurelist_file)
-
-    #tracemalloc.start()
 
     samplelist = [data_dir+f for f in os.listdir(data_dir) if '.csv' in f]
 
     features = lcms.Features()
 
     features.Align(samplelist)
-
-    print(features.results)
-    '''featurelist=featurelist_aligner(samplelist)
-    #featurelist.to_csv(data_dir + 'feature_list.csv')
-    featurelist=gapfill(featurelist)
-    featurelist.to_csv(data_dir + 'feature_list.csv')'''
+    features.GapFill()
+    featurelist.to_csv(data_dir + './feature_list.csv')
     #OHNratios(featurelist)
     '''
 
