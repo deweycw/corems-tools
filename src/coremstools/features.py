@@ -1,15 +1,17 @@
 from pandas import DataFrame, read_csv, unique
-from numpy import mean, std, array, zeros, shape, where
+from numpy import mean, std, array, zeros, shape, where, log10
 from tqdm import tqdm
 
 class Features:
 
 
-    def __init__(self):
+    def __init__(self, include_dispersity = True):
         
         self.results: DataFrame = None
         self.shared_columns: list = None
         self.averaged_cols: list = None
+
+        self.include_dispersity = include_dispersity
 
         self._results = {}
 
@@ -20,7 +22,7 @@ class Features:
     def _build_results_dict(self):
         
         self.shared_columns = ['Time', 'Molecular Formula', 'Ion Charge', 'Calculated m/z', 'Heteroatom Class',  'DBE']
-        
+
         self.averaged_cols = ['m/z',
                     'm/z Error (ppm)',
                     'Calibrated m/z',
@@ -29,8 +31,11 @@ class Features:
                     'Isotopologue Similarity',
                     'Confidence Score',
                     'S/N']
-                    #'Dispersity']
         
+        if self.include_dispersity:
+
+            self.averaged_cols.append('Dispersity')
+            
         
         for c in self.shared_columns:
             
@@ -122,7 +127,7 @@ class Features:
 
 
 
-    def GapFill(self):
+    def LegacyGapFill(self):
         
         self.results['Gapfilled'] = False
 
@@ -160,9 +165,23 @@ class Features:
 
                     self.results.loc[i,'Low Conf. Gap'] = True
 
+
+
     def GapFill(self):
 
+        print('performing gap fill')
+
+        intensity_cols = list(self.results.filter(regex='Intensity').columns)
+
+        
+
+        self.results.sort_values(['Time','Calibrated m/z'], inplace=True)
+
         self.results['>1 Peak w/in Uncertainty'] = None
+
+        self.results['Gapfill ID'] = None
+
+        self.results['Gapfill Flagged'] = None
 
         for time_step in unique(self.results['Time']):
 
@@ -196,11 +215,69 @@ class Features:
             
             time_step_df.sort_values(['Time','Calibrated m/z'], inplace=True)
 
-            self.results.sort_values(['Time','Calibrated m/z'], inplace=True)
+            offset_diag_rows = array([ i for i in range(0,shape(mz_array)[0]-1)])
+
+            offset_diag_cols = array([ j for j in range(1, shape(mz_array)[0])])
+
+            neighboring_mz_diffs = mz_diff_array[offset_diag_rows, offset_diag_cols]
+            
+            neighboring_mz_err = mz_error_array[offset_diag_rows, offset_diag_cols]
+
+            residual_diff = neighboring_mz_diffs - neighboring_mz_err
+
+            transition_inds = where(residual_diff > 0 )
+
+            n_true_block = 1
+                        
+            gapfill_column = zeros((shape(mz_array)[0],1))
+
+            for ix in range(len(time_step_df)):
+
+                gapfill_bool = time_step_df.iloc[ix].loc['>1 Peak w/in Uncertainty']
+
+                if gapfill_bool == True:
+                    
+                    if log10(n_true_block) < 1:
+
+                        add_string = '.0'
+                    
+                    else:
+
+                        add_string = '.'
+                    gap_id = float(str(time_step) + add_string + str(n_true_block))
+                    
+                    gapfill_column[ix,0] = gap_id
+
+                    if ix in transition_inds[0]:
+
+                        n_true_block = n_true_block + 1 
+
+            time_step_df['Gapfill ID'] = gapfill_column
+            
+            gap_ids_list = [id for id in unique(time_step_df['Gapfill ID']) if id > 0]
+            
+            for id in gap_ids_list:
+
+                id_df = time_step_df[time_step_df['Gapfill ID'] == id].copy()
+
+                id_intensity_sum = id_df.filter(regex='Intensity').sum(axis=0)
+
+                id_df[*intensity_cols] = id_intensity_sum
+
+                id_max_confidence_score = max(id_df['Confidence Score'])
+
+                id_df.loc[id_df['Confidence Score'] < id_max_confidence_score,'Gapfill Flagged'] = True
+
+                time_step_df[time_step_df['Gapfill ID'] == id] = id_df
+
+            
+            
             
             self.results[self.results['Time'] == time_step] = time_step_df
 
-
+            
+            
+            
 
 
 
