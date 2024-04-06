@@ -173,7 +173,6 @@ class Features:
 
         intensity_cols = list(self.results.filter(regex='Intensity').columns)
 
-        
 
         self.results.sort_values(['Time','Calibrated m/z'], inplace=True)
 
@@ -182,6 +181,8 @@ class Features:
         self.results['Gapfill ID'] = None
 
         self.results['Gapfill Flagged'] = None
+
+        self.results['Gapfilled Molecular Formula'] = None
 
         for time_step in unique(self.results['Time']):
 
@@ -209,7 +210,7 @@ class Features:
 
             gapfill_sum = n_gapfills_array.sum(axis=0)
 
-            n_gapfills_vector = array([True if i > 1 else False for i in gapfill_sum ])
+            n_gapfills_vector = array([True if i > 1 else None for i in gapfill_sum ])
             
             time_step_df['>1 Peak w/in Uncertainty'] = n_gapfills_vector
             
@@ -244,6 +245,7 @@ class Features:
                     else:
 
                         add_string = '.'
+
                     gap_id = float(str(time_step) + add_string + str(n_true_block))
                     
                     gapfill_column[ix,0] = gap_id
@@ -262,11 +264,17 @@ class Features:
 
                 id_intensity_sum = id_df.filter(regex='Intensity').sum(axis=0)
 
-                id_df[*intensity_cols] = id_intensity_sum
+                print(id_intensity_sum.iloc[0])
+
+                id_df.loc[*intensity_cols] = id_intensity_sum
 
                 id_max_confidence_score = max(id_df['Confidence Score'])
 
                 id_df.loc[id_df['Confidence Score'] < id_max_confidence_score,'Gapfill Flagged'] = True
+
+                gapfilled_mf = id_df.loc[id_df['Confidence Score'] == id_max_confidence_score,'Molecular Formula']
+
+                id_df.loc[id_df['Confidence Score'] < id_max_confidence_score,'Gapfilled Molecular Formula'] = gapfilled_mf.iloc[0]
 
                 time_step_df[time_step_df['Gapfill ID'] == id] = id_df
 
