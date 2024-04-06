@@ -5,13 +5,14 @@ from tqdm import tqdm
 class Features:
 
 
-    def __init__(self, include_dispersity = True):
+    def __init__(self, csv_list, include_dispersity = True):
         
         self.results: DataFrame = None
         self.shared_columns: list = None
         self.averaged_cols: list = None
 
         self.include_dispersity = include_dispersity
+        self.csv_list = csv_list
 
         self._results = {}
 
@@ -51,11 +52,11 @@ class Features:
 
 
 
-    def Align(self, csv_list):
+    def Align(self):
         
         self.elements = []
         
-        for file in csv_list:
+        for file in self.csv_list:
             
             print('aligning ' + file)   
 
@@ -263,8 +264,6 @@ class Features:
                 id_df = time_step_df[time_step_df['Gapfill ID'] == id].copy()
 
                 id_intensity_sum = id_df.filter(regex='Intensity').sum(axis=0)
-
-                print(id_intensity_sum.iloc[0])
 
                 id_df.loc[*intensity_cols] = id_intensity_sum
 
