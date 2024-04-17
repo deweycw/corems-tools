@@ -22,7 +22,7 @@ class Features:
 
     def _build_results_dict(self):
         
-        self.shared_columns = ['Time', 'Molecular Formula', 'Ion Charge', 'Calculated m/z', 'Heteroatom Class',  'DBE']
+        self.shared_columns = ['Time', 'Molecular Formula','mol_class', 'Ion Charge', 'Calculated m/z', 'Heteroatom Class',  'DBE']
 
         self.averaged_cols = ['m/z',
                     'm/z Error (ppm)',
@@ -66,7 +66,7 @@ class Features:
             
             result['feature'] = list(zip(result['Time'],result['Molecular Formula']))
             
-            file_name = file.replace('.csv','')
+            file_name = file.replace('.csv','').split('/')[-1]
             
             self._results['Intensity: '+ file_name] = {}
 
