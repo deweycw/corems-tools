@@ -27,18 +27,18 @@ A Python package for processing CoreMS assignments of ultrahigh mass resolution 
 #### Build/install commands:
 See: https://packaging.python.org/en/latest/tutorials/packaging-projects/
 
-    # for editable local installation 
+###### For editable local installation 
     python -m pip install -e . # from root directory of project  
         
-    # build prior to uploading to archives
+###### Build prior to uploading to archives
     python -m pip install -U build
     python -m build
 
-    # upload to TestPyPi with Twine
+###### Upload to TestPyPi with Twine
     python -m pip install -U twine
     python -m twine upload --respository testpypi dist/*
 
-    # install pkg from TestPyPi
+###### Install pkg from TestPyPi
     python -m pip install --index-url https://test.pypi.org/simple/ --no-deps PACKAGE_NAME
 
 
