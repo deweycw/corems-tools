@@ -1,7 +1,6 @@
 from pandas import DataFrame, read_csv, unique
 from numpy import mean, std, array, zeros, shape, where, log10, average
 from tqdm import tqdm
-import dask.dataframe as dd
 
 class Features:
 
@@ -46,9 +45,7 @@ class Features:
             t = average(peak_chroma['time'], weights=peak_chroma['EIC']) 
 
             return d, t
-        
 
-       
         file_list = self.csv_list
 
         for file in file_list:
@@ -68,7 +65,6 @@ class Features:
             assignments.to_csv(file_base + '_d+rt.csv')
 
 
-            
 
 
 

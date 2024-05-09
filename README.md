@@ -13,10 +13,10 @@ A Python package for processing CoreMS assignments of ultrahigh mass resolution 
     6. confidence score 
 - Gap filling of ambiguous assignments 
 - Stoichiometric classifications 
-- NOSC calucations 
+- NOSC calculations 
 - O/C, H/C, N/C calculations 
 - Identification of significant assignment errors in a dataset, based on rolling average and standard deviation
-- Idenetification of features in samples that also appear in blanks 
+- Identification of features in samples that also appear in blanks 
 
 
 ##### Functions that require CoreMS:
@@ -36,7 +36,7 @@ See: https://packaging.python.org/en/latest/tutorials/packaging-projects/
 
 ###### Upload to TestPyPi with Twine
     python -m pip install -U twine
-    python -m twine upload --respository testpypi dist/*
+    python -m twine upload --repository testpypi dist/*
 
 ###### Install pkg from TestPyPi
     python -m pip install --index-url https://test.pypi.org/simple/ --no-deps PACKAGE_NAME
