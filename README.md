@@ -13,11 +13,9 @@ A Python package for processing CoreMS assignments of ultrahigh mass resolution 
     6. confidence score 
 - Gap filling of ambiguous assignments 
 - Stoichiometric classifications 
-- NOSC calculations 
+- NOSC calucations 
 - O/C, H/C, N/C calculations 
 - Identification of significant assignment errors in a dataset, based on rolling average and standard deviation
-- Identification of features in samples that also appear in blanks 
-
 
 ##### Functions that require CoreMS:
 - Determination of a feature's chromatographic dispersity
@@ -40,6 +38,25 @@ See: https://packaging.python.org/en/latest/tutorials/packaging-projects/
 
 ###### Install pkg from TestPyPi
     python -m pip install --index-url https://test.pypi.org/simple/ --no-deps PACKAGE_NAME
+
+### Example Workflow
+
+###### Phase 1: Assignments & initial QC
+1. Generate calibrants using calibrant generator function (requires CoreMS)
+2. Perform assignments (requires CoreMS)
+3. Calculate dispersity (requires CoreMS)
+4. Evaluate retention and intensity of internal standard (requires CoreMS)
+5. Generate assignment error plots (error v. m/z; error dist in each time window)
+
+###### Phase 2: Alignment, gapfilling, blank correction, error flags
+6. Align features across dataset
+7. Gapfill across dataset 
+8. Perform blank correction 
+9. Flag features with potentially signficant assignment error (i.e., feature is flagged if difference between rolling average of assignment error (across dataset) and error of individual assignment exceeds 4x the standard deviation of the assignment error for the specific feature) 
+
+###### Phase 3: Additional classifications 
+10. Determine O/C, H/C, N/C & NOSC for features 
+11. Determine stoichiometric classifcations
 
 
 
