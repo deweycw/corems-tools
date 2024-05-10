@@ -14,4 +14,5 @@ if __name__ == '__main__':
 
     df = pd.DataFrame({'File':flist})
     print(df)
-    #test = Assignments(sample_df=df)
+    raw_assignments = Assignments(sample_df=df)
+    raw_assignments.run_internal_std_qc([8,10])
