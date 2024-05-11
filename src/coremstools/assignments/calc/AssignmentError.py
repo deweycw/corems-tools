@@ -6,8 +6,8 @@ from coremstools.Parameters import Settings
 
 class AssignmentError:
 
-    def errorplot(self, assignments, filename):
-    
+    def ErrorPlot( assignments, filename):
+
         #### Plot and save error distribution figure
         fig, ((ax1, ax2)) = plt.subplots(1,2)
         fig.set_size_inches(12, 6)
@@ -17,18 +17,17 @@ class AssignmentError:
         kdeplot(x='m/z Error (ppm)', data=assignments, hue='Time', ax=ax2, legend=False)
         ax2.set_title('b', fontweight='bold', loc='left')
         fig.tight_layout()
-        fig.savefig(Settings.assignments_directory + filename, dpi=200,format='jpg')   
+        fig.savefig(filename, dpi=200,format='jpg')   
 
 
-    def rt_assign_plot(self, LCMS_annotations, filename):
+    def rt_assign_plot(assignments, filename):
 
-        #### Plot library assignments over time
         assign_summary=[]
-        for time in LCMS_annotations['Time'].unique():
+        for time in assignments['Time'].unique():
             current={}
             current['Time']=time
-            for mol_class in LCMS_annotations['Molecular Class'].unique():
-                current[mol_class]=len(LCMS_annotations[(LCMS_annotations['Molecular Class']==mol_class) & (LCMS_annotations['Time']==time)])
+            for mol_class in assignments['Molecular Class'].unique():
+                current[mol_class]=len(assignments[(assignments['Molecular Class']==mol_class) & (assignments['Time']==time)])
             assign_summary.append(current)
 
         df=DataFrame(assign_summary)

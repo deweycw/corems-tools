@@ -8,7 +8,7 @@ from coremstools.Parameters import Settings
 
 class QualityControl:
 
-    def StandardQC(self, std_timerange, save_file='internal_std'):
+    def StandardQC(samplelist, std_timerange, save_file='internal_std.jpg'):
             
         """
         Plots the extracted ion chromatogram (EIC) of the internal standard for each sample,
@@ -31,7 +31,8 @@ class QualityControl:
 
         _, axs = plt.subplot_mosaic([['a','b']], figsize=(11,5), constrained_layout=True)
         axs['a'].set(xlabel='Time (min)',ylabel='Intensity',title='Internal Standard EIC = '+str(stdmass) + ' m/z')
-
+        
+        print('running QC check ...')
         for file in samplelist['File'].unique():
             try:
                 parser = rawFileReader.ImportMassSpectraThermoMSFileReader(data_dir+file)
@@ -44,9 +45,9 @@ class QualityControl:
                 area[file]=(sum(df_sub['EIC']))
                 rt[file]=(df_sub.time[df_sub.EIC==df_sub.EIC.max()].max())
                 axs['a'].plot(df_sub['time'],df_sub['EIC']/1e7,label=file[11:])
-                print(file)
+                print('  ' + file)
             except:
-                print('No file found: ' + file)
+                print('--File not found: ' + file)
 
         axs['a'].legend(loc='center left', bbox_to_anchor=(1, 0.5))
         axs['a'].set_title('a', fontweight='bold', loc='left')
@@ -65,19 +66,19 @@ class QualityControl:
         samplelist['qc_pass']=0
         for i in samplelist.index:
             if (abs(samplelist.qc_area[i]-peak_mean)<2*peak_stdv):
-                samplelist.qc_pass[i]=1
+                samplelist.loc[i,'qc_pass']=1
 
-        print(str(samplelist.qc_pass.sum()) + ' pass of ' + str(len(samplelist)))
+        print(str(samplelist.qc_pass.sum()) + ' pass of ' + str(len(samplelist)) + ' files (i.e., peak area of standard is <= 2x standard deviation of the mean)')
 
         peak_stdv=samplelist[samplelist.qc_pass==1].qc_area.std()
 
-        print(str(round(peak_stdv/peak_mean*100,1))+' % std dev')
+        print('std dev of area of standard peak: ' + str(round(peak_stdv/peak_mean*100,1))+'%' )
 
         #Create plot of overlaid standard EICs
         histplot(x='qc_area',data=samplelist,ax=axs['b'])
         axs['b'].set_xlabel('Internal Standard Peak Area')
         axs['b'].set_title('b', fontweight='bold', loc='left')
 
-        plt.savefig(save_file,dpi=300,format='jpg')
+        plt.savefig(data_dir + save_file,dpi=300,format='jpg')
 
         return(samplelist)
