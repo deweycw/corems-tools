@@ -23,7 +23,7 @@ class Features(Align, GapFill):
             self.run_alignment()
             self.feature_list = GapFill.GapFill(self.feature_list)
 
-    def mz_error_flag(self):
+    def flag_errors(self):
         """
         This function identifies features with potentially significant mass measurement errors based on rolling average and standard deviation.
 
@@ -43,7 +43,7 @@ class Features(Align, GapFill):
         self.feature_list.to_csv(Settings.assignments_directory + 'feature_list.csv', index=False)
 
         
-    def blank_flag(self):
+    def flag_blank_features(self, blank_sample):
         """
         This function calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.
 
@@ -54,6 +54,14 @@ class Features(Align, GapFill):
         Returns:
             The modified DataFrame with a new column 'blank' flag indicating potential blank contamination.
         """
-        self.feature_list['Max Intense'] = self.feature_list.filter(regex='Intensity').max(axis=1)
-        self.feature_list['blank'] = self.feature_list['Intensity:'+ blankfile.replace(dfiletype,'')].fillna(0)/feature_list['Max Intense']
-        return(feature_list)
+        col = None
+
+        for col in self.feature_list.columns:
+            
+            if blank_sample.split('.')[0] in col:
+
+                blank_sample_col = col
+
+        self.feature_list['Max Intensity'] = self.feature_list.filter(regex='Intensity').max(axis=1)
+        self.feature_list['blank'] = self.feature_list[blank_sample_col].fillna(0) / self.feature_list['Max Intensity']
+    

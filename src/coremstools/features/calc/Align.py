@@ -48,6 +48,8 @@ class Align:
 
         for file in sample_df['File']:
 
+            print('  ' + file)
+
             file = assignments_dir + file.split('.')[0] + disp_addend + '.csv'
 
             results = read_csv(file)
