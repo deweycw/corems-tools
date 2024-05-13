@@ -1,6 +1,3 @@
-
-####Christian 2023_12_05
-
 import pandas as pd
 import numpy as np
 import tqdm
@@ -13,10 +10,8 @@ sys.path.append("./")
 import matplotlib.pyplot as plt
 
 
-
 def has_numbers(inputString):
     return any(char.isdigit() for char in inputString)
-
 
 def get_heteroatoms(df):
     cols = df.columns
@@ -35,8 +30,6 @@ def get_heteroatoms(df):
         elif c == 'Time':
             add = False
     return heteros
-    
-
 
 def assign_mol_class(complete_results_df,molclasses):
                 # creates list of mol_classes based on heteroatom list
@@ -59,43 +52,40 @@ def assign_mol_class(complete_results_df,molclasses):
     all_elements = get_elements(molclasses[j])
 
     all_results['ID'] = range(0,len(all_results))
-    
+
     times = all_results['Time'].unique()
 
     holder = []
     sizenp = 0
     pbar = tqdm.tqdm(times)
+
     for t in pbar:
-        
+
         time_average = all_results[all_results['Time'] == t]
 
         sizenp = sizenp + len(time_average)
-
-        #print('unassigned: ', len(time_average[time_average['Molecular Formula'].isnull()]))
-        #print('assigned: ', len(time_average[~time_average['Molecular Formula'].isnull()]))
 
         for m in molclasses:
 
             if m != 'Unassigned':
                 elements = get_elements(m)
-                
+
                 sub = get_molclass_subset(elements, all_elements,time_average[~time_average['Molecular Formula'].isna()]) 
                 sub['Molecular Class'] = m    
 
- 
+
             elif m == 'Unassigned':
                 sub = time_average[time_average['Molecular Formula'].isna()] 
                 sub['Molecular Class'] = m
 
             #print('\t%s: %s' %(m,len(sub)))
-                
+
             pbar.set_description_str(desc="Assigning molecular class %s at time %s" % (m,t) , refresh=True)
 
             holder.append(sub)
 
 
     results = pd.concat(holder)
-    
     return results 
 
 

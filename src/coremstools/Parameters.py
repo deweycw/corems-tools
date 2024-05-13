@@ -10,4 +10,4 @@ class Settings:
     internal_std_mz: float = 678.2915 # defaults to mass of [cyanocobalamin]2+
     sample_list: str = None # 
     csvfile_addend = 'assignments'
-    
+    dispersity_addend = '_dispersity'

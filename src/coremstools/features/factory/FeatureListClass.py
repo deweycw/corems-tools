@@ -2,50 +2,58 @@ from pandas import DataFrame
 
 from coremstools.features.calc.Align import Align
 from coremstools.features.calc.GapFill import GapFill 
+from coremstools.Parameters import Settings
 
 class Features(Align, GapFill):
 
-    def __init__(self, csv_list, include_dispersity = True):
+    def __init__(self, sample_df):
         
-        self.results: DataFrame = None
-        self.shared_columns: list = None
-        self.averaged_cols: list = None
+        self.feature_list: DataFrame = None
+        self.sample_df = sample_df
 
-        self.include_dispersity = include_dispersity
-        self.csv_list = csv_list
+    def run_alignment(self):
 
-        self._results = {}
+        self.feature_list = Align.Align(self.sample_df)
 
-        self._build_results_dict()
+    def run_gapfill(self):
 
+        if self.feature_list is not None:
+            self.feature_list = GapFill.GapFill(self.feature_list)
+        else:
+            self.run_alignment()
+            self.feature_list = GapFill.GapFill(self.feature_list)
 
-    def _build_results_dict(self):
+    def mz_error_flag(self):
+        """
+        This function identifies features with potentially significant mass measurement errors based on rolling average and standard deviation.
+
+        Args:
+            feature_list: A pandas DataFrame containing the aligned features with 'm/z Error (ppm)' and 'm/z Error (ppm) stdev' columns.
+
+        Returns:
+            The modified DataFrame with a new column 'mz error flag' indicating potential errors.
+        """
+
+        self.feature_list = self.feature_list.sort_values(by=['Calculated m/z'])
+        self.feature_list['rolling error'] = self.feature_list['m/z Error (ppm)'].rolling(int(len(self.feature_list)/50), center=True,min_periods=0).mean()
+        self.feature_list['mz error flag'] = abs(self.feature_list['rolling error'] - self.feature_list['m/z Error (ppm)']) / (4*self.feature_list['m/z Error (ppm) stdev'])
+
+    def export(self):
+
+        self.feature_list.to_csv(Settings.assignments_directory + 'feature_list.csv', index=False)
+
         
-        self.shared_columns = ['Time', 'Molecular Formula','mol_class', 'Ion Charge', 'Calculated m/z', 'Heteroatom Class',  'DBE']
+    def blank_flag(self):
+        """
+        This function calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.
 
-        self.averaged_cols = ['m/z',
-                    'm/z Error (ppm)',
-                    'Calibrated m/z',
-                    'Resolving Power',
-                    'm/z Error Score',
-                    'Isotopologue Similarity',
-                    'Confidence Score',
-                    'S/N']
-        
-        if self.include_dispersity:
+        Args:
+            feature_list: A pandas DataFrame containing the aligned features with intensity columns prefixed with 'Intensity:'.
+            blankfile: The filename of the blank data file (assumed to be defined elsewhere).
 
-            self.averaged_cols.append('Dispersity')
-            
-        
-        for c in self.shared_columns:
-            
-            self._results[c] = {}
-        
-        self._results['N Samples'] = {}
-        
-        for c in self.averaged_cols:
-            
-            self._results[c] = {}
-            
-            self._results[c + ' stdev'] = {}
-
+        Returns:
+            The modified DataFrame with a new column 'blank' flag indicating potential blank contamination.
+        """
+        self.feature_list['Max Intense'] = self.feature_list.filter(regex='Intensity').max(axis=1)
+        self.feature_list['blank'] = self.feature_list['Intensity:'+ blankfile.replace(dfiletype,'')].fillna(0)/feature_list['Max Intense']
+        return(feature_list)

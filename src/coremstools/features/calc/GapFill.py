@@ -1,32 +1,34 @@
-from pandas import unique
+from pandas import unique, concat
 from numpy import array, zeros, shape, where, log10
 from tqdm import tqdm
 
 class GapFill:
 
-    def GapFill(self):
+    def GapFill(results):
 
         print('performing gap fill')
 
-        intensity_cols = list(self.results.filter(regex='Intensity').columns)
+        intensity_cols = list(results.filter(regex='Intensity').columns)
 
-        cols = self.results.columns
+        cols = results.columns
 
-        self.results = self.results[[col for col in cols if 'Intensity' not in col] + [col for col in cols if 'Intensity' in col]]
+        results = results[[col for col in cols if 'Intensity' not in col] + [col for col in cols if 'Intensity' in col]]
 
-        self.results.sort_values(['Time','Calibrated m/z'], inplace=True)
+        results.sort_values(['Time','Calibrated m/z'], inplace=True)
 
-        self.results['Multiple Peaks w/in Uncertainty'] = None
+        results['Multiple Peaks w/in Uncertainty'] = None
 
-        self.results['Gapfill ID'] = None
+        results['Gapfill ID'] = None
 
-        self.results['Gapfill Flag'] = None
+        results['Gapfill Flag'] = None
 
-        self.results['Gapfill Molecular Formula'] = None
+        results['Gapfill Molecular Formula'] = None
 
-        for time_step in unique(self.results['Time']):
+        holder = []
 
-            time_step_df = self.results[self.results['Time'] == time_step].copy()
+        for time_step in unique(results['Time']):
+
+            time_step_df = results[results['Time'] == time_step].copy()
 
             n_rows = len(time_step_df)
 
@@ -129,10 +131,6 @@ class GapFill:
 
                 time_step_df[time_step_df['Gapfill ID'] == id] = id_df
 
-            
-            
-            
-            self.results[self.results['Time'] == time_step] = time_step_df
-
-            
+            holder.append(time_step_df)
+        return concat(holder)
         
