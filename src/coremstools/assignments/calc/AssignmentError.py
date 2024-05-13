@@ -20,7 +20,7 @@ class AssignmentError:
         fig.savefig(filename, dpi=200,format='jpg')   
 
 
-    def rt_assign_plot(assignments, filename):
+    def RTAssignPlot(assignments, filename):
 
         assign_summary=[]
         for time in assignments['Time'].unique():
@@ -35,4 +35,4 @@ class AssignmentError:
 
         df.plot.bar(x='Time',y=df.columns[1:],stacked=True,ylabel='Peaks')
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,frameon=False)
-        plt.savefig(Settings.assignments_directory + filename, bbox_inches='tight',format='jpg')
+        plt.savefig(filename, bbox_inches='tight',format='jpg')
