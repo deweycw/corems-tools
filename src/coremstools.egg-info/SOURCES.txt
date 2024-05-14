@@ -10,6 +10,7 @@ src/coremstools.egg-info/requires.txt
 src/coremstools.egg-info/top_level.txt
 src/coremstools/assignments/calc/AssignmentError.py
 src/coremstools/assignments/calc/Dispersity.py
+src/coremstools/assignments/calc/Helpers.py
 src/coremstools/assignments/calc/QualityControl.py
 src/coremstools/assignments/factory/AssignmentsClass.py
 src/coremstools/features/calc/Align.py

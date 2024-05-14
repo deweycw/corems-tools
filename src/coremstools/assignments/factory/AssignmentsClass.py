@@ -1,6 +1,8 @@
-from pandas import DataFrame, read_csv, unique
-from numpy import mean, std, array, zeros, shape, where, log10, average
-from tqdm import tqdm
+__author__ = "Christian Dewey & Rene Boiteau"
+__date__ = "2024 May 14"
+__version__ = "0.0.1"
+
+from pandas import DataFrame, read_csv
 
 from coremstools.assignments.calc.AssignmentError import AssignmentError
 from coremstools.assignments.calc.QualityControl import QualityControl
@@ -8,8 +10,46 @@ from coremstools.assignments.calc.Dispersity import Dispersity
 from coremstools.Parameters import Settings
 import coremstools.assignments.calc.Helpers as lcmsfns
 
-class Assignments(QualityControl, Dispersity, AssignmentError):
 
+class Assignments(QualityControl, Dispersity, AssignmentError):
+    """
+    Base class for initial processing of CoreMS assignments. Used before assembly of feature list. 
+
+    Parameters 
+    ----------
+    sample_df : DataFrame 
+        Pandas DataFrame containing a 'File' column with the name of each .raw file in the dataset (not full path). Defaults to None.
+    t_interval : float
+        Interval (min) over which scans are averaged in CoreMS LC assignments. Defaults to 2 (min).   
+
+    Attributes
+    ----------
+    raw_file_directory : str
+        Full path to directory containing Thermo .raw files 
+    assignments_directory : str
+        Full path to directory containing CoreMS assignment results 
+    eic_tolerance : float
+        Tolerance (ppm) for extraction of ion chromatogram (from Thermo .raw file) of given m/z 
+    internal_std_mz : float
+        m/z of internal standard used for quality control checks; defaults to 678.2915, which is the mass of [cyanocobalamin]2+ (vitamin B12)
+    sample_list : str
+        Full path to .csv file containing sample list. This file will be imported as Pandas DataFrame 
+    csvfile_addend : str
+        Textual difference between the name of the Thermo .raw file and the .csv file containing the unprocessed CoreMS assignments. If the .raw file is named SAMPLE.raw, then the assignments file is assumed to be named 'SAMPLE' + csvfile_addend + '.csv'. Defaults to '_assignments'. 
+    dispersity_addend : str
+        Textual difference between the name of the Thermo .raw file and the .csv file with the processed CoreMS assignments AND dispersity calculation. Defaults to _dispersity'
+
+    Methods
+    -------
+    * add_mol_class()
+        Adds molecular class to CoreMS assignments & creates a 'Molecular Class' column. Altered assignment .csvs are rewritten with new columns. 
+    * run_internal_std_qc(timerange=[10,12]) -> DataFrame
+        Runs the quality control checks with internal standard m/z. Returns copy of sample list DataFrame with additional columns for internal standard area, retention time, and QC pass/fail flag.
+    * run_assignment_error_plot()
+        For each sample in the sample list, this method creates .jpg plots of (i) m/z Error (ppm) v. m/z and (ii) Molecular Classes of assignments over separation. The .jpgs are saved in the directory defined by Settings.assignments_directory.
+    * run_dispersity_calculation()
+        Runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. ***** Currently quite slow. Would be good to do this calculation after the feature list is assembled. ******
+    """
 
     def __init__(self, sample_df, t_interval = 2):
         
@@ -17,7 +57,9 @@ class Assignments(QualityControl, Dispersity, AssignmentError):
         self.sample_df = sample_df     # dataframe
 
     def add_mol_class(self):
-
+        """
+        Adds molecular class to CoreMS assignments & creates a 'Molecular Class' column. Altered assignment .csvs are rewritten with new columns. 
+        """
         for f in self.sample_df['File']:
 
             fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
@@ -27,9 +69,9 @@ class Assignments(QualityControl, Dispersity, AssignmentError):
             df2 = lcmsfns.assign_mol_class(df,molclasses)
             df2.to_csv(fpath, index = False)
 
-    def run_internal_std_qc(self,timerange):
+    def run_internal_std_qc(self,timerange=[10,12]):
 
-        temp = QualityControl.StandardQC(self.sample_df, timerange)
+        self.sample_df = QualityControl.StandardQC(self.sample_df, timerange) ######################################### need to check why this returns something
 
     def run_assignment_error_plot(self):
 
