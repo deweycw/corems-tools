@@ -8,14 +8,14 @@ __version__ = "0.0.1"
 
 from pandas import DataFrame, read_csv
 
-from coremstools.assignments.calc.AssignmentError import AssignmentError
-from coremstools.assignments.calc.QualityControl import QualityControl
-from coremstools.assignments.calc.Dispersity import Dispersity 
+import coremstools.AssignmentError as AssignmentError
+import coremstools.QualityControl as QualityControl
+import coremstools.Dispersity as Dispersity
 from coremstools.Parameters import Settings
-import coremstools.assignments.calc.Helpers as lcmsfns
+import coremstools.Helpers as lcmsfns
 
 
-class AssignmentsClass(QualityControl, Dispersity, AssignmentError):
+class Assignments():
     """
     Base class for initial processing of CoreMS assignments. Used before assembly of feature list. 
 

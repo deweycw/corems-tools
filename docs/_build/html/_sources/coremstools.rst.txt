@@ -10,13 +10,13 @@ Modules
 Assignments
 -----------
 
-.. automodule:: coremstools.assignments.factory.AssignmentsClass
+.. automodule:: coremstools.Assignments
    :members:
 
-.. automodule:: coremstools.assignments.calc.AssignmentError
+.. automodule:: coremstools.AssignmentError
    :members:
    
-.. automodule:: coremstools.assignments.calc.Dispersity
+.. automodule:: coremstools.Dispersity
    :members:
 
    
@@ -27,7 +27,7 @@ Assignments
 Feature List
 ------------
 
-.. automodule:: coremstools.features.factory.FeatureListClass
+.. automodule:: coremstools.FeatureList
    :members:
    
 .. raw:: html

@@ -3,11 +3,11 @@ Base module for holding and processing CoreMS **features** generated from *assig
 """
 
 from pandas import DataFrame
-from coremstools.features.calc.Align import Align
-from coremstools.features.calc.GapFill import GapFill 
+import coremstools.Align as Align
+import coremstools.GapFill as GapFill 
 from coremstools.Parameters import Settings
 
-class FeaturesClass(Align, GapFill):
+class Features():
     """
     Base class for holding CoreMS features across a dataset. 
 
