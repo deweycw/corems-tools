@@ -1,7 +1,3 @@
-"""
-Base module for holding and processing CoreMS **features** generated from *assignments*. 
-"""
-
 from pandas import DataFrame
 import coremstools.Align as Align
 import coremstools.GapFill as GapFill 

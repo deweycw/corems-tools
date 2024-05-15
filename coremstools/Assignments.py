@@ -1,7 +1,3 @@
-"""
-Base module for holding and processing CoreMS **assignments** of LC-ESI-HRMS data. 
-"""
-
 __author__ = "Christian Dewey & Rene Boiteau"
 __date__ = "2024 May 14"
 __version__ = "0.0.1"

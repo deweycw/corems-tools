@@ -77,7 +77,26 @@
              
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
-<p>hello</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coremstools.Parameters</span> <span class="kn">import</span> <span class="n">Settings</span>
+<span class="kn">from</span> <span class="nn">coremstools.Assignments</span> <span class="kn">import</span> <span class="n">Assignments</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">Settings</span><span class="o">.</span><span class="n">raw_file_directory</span> <span class="o">=</span> <span class="s2">&quot;/Volumes/IQX-Data/&quot;</span>
+    <span class="n">Settings</span><span class="o">.</span><span class="n">internal_std_mz</span> <span class="o">=</span> <span class="mf">678.2915</span>
+
+    <span class="n">flist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">raw_file_directory</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;.raw&#39;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">flist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;File&#39;</span><span class="p">:</span><span class="n">flist</span><span class="p">})</span>
+
+    <span class="n">raw_assignments</span> <span class="o">=</span> <span class="n">Assignments</span><span class="p">(</span><span class="n">sample_df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">raw_assignments</span><span class="o">.</span><span class="n">run_internal_std_qc</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">12</span><span class="p">])</span>
+</pre></div>
+</div>
 </section>
 
 
