@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import tqdm
-import seaborn as sns
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -9,7 +8,27 @@ import sys
 sys.path.append("./")
 import matplotlib.pyplot as plt
 
+"""
+Helper functions for CoreMS assignments.
 
+Parameters 
+----------
+sample_df : DataFrame 
+    Pandas DataFrame containing a 'File' column with the name of each .raw file in the dataset (not full path). Defaults to None.
+t_interval : float
+    Interval (min) over which scans are averaged in CoreMS LC assignments. Defaults to 2 (min).   
+
+Methods
+-------
+add_mol_class()
+    Adds molecular class to CoreMS assignments & creates a 'Molecular Class' column. Altered assignment .csvs are rewritten with new columns. 
+run_internal_std_qc(timerange=[10,12]) -> DataFrame
+    Runs the quality control checks with internal standard m/z. Returns copy of sample list DataFrame with additional columns for internal standard area, retention time, and QC pass/fail flag.
+run_assignment_error_plot()
+    For each sample in the sample list, this method creates .jpg plots of (i) m/z Error (ppm) v. m/z and (ii) Molecular Classes of assignments over separation. The .jpgs are saved in the directory defined by Settings.assignments_directory.
+run_dispersity_calculation()
+    Runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. ***** Currently quite slow. Would be good to do this calculation after the feature list is assembled. ******
+"""
 def has_numbers(inputString):
     return any(char.isdigit() for char in inputString)
 
