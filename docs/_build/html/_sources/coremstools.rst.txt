@@ -1,6 +1,8 @@
 Modules
 =======
 
+
+
 .. raw:: html
 
    <hr>
@@ -10,11 +12,14 @@ Assignments
 
 .. automodule:: coremstools.assignments.factory.AssignmentsClass
    :members:
+
 .. automodule:: coremstools.assignments.calc.AssignmentError
    :members:
+   
 .. automodule:: coremstools.assignments.calc.Dispersity
    :members:
 
+   
 .. raw:: html
 
    <hr>
