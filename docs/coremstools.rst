@@ -1,6 +1,12 @@
 Modules
 =======
 
+
+
+.. raw:: html
+
+   <hr>
+
 Assignments
 -----------
 
@@ -11,12 +17,19 @@ Assignments
 .. automodule:: coremstools.assignments.calc.Dispersity
    :members:
 
+.. raw:: html
+
+   <hr>
+
 Feature List
 ------------
 
 .. automodule:: coremstools.features.factory.FeatureListClass
    :members:
    
+.. raw:: html
+
+   <hr>
 
 Global Parameters
 -----------------

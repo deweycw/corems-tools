@@ -8,6 +8,7 @@ Welcome to coremstools's documentation!
    :maxdepth: 3
    :caption: Contents:
 
+   overview
    installation
    coremstools
    examples
