@@ -1,17 +1,18 @@
 Welcome to coremstools's documentation!
 =======================================
 
-
-.. automodule:: coremstools.assignments.factory.AssignmentsClass
-   :members:
-   :inherited-members:
-
-.. automodule:: coremstools.Parameters
-   :members:
+.. automodule:: coremstools
+    :members:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
+
+   installation
+   coremstools
+   examples
+   
+
 
 
 

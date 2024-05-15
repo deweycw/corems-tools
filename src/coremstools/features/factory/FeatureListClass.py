@@ -1,11 +1,35 @@
-from pandas import DataFrame
+"""
+Base module for holding and processing CoreMS **features** generated from *assignments*. 
+"""
 
+from pandas import DataFrame
 from coremstools.features.calc.Align import Align
 from coremstools.features.calc.GapFill import GapFill 
 from coremstools.Parameters import Settings
 
-class Features(Align, GapFill):
+class FeaturesClass(Align, GapFill):
+    """
+    Base class for holding CoreMS features across a dataset. 
 
+    Parameters 
+    ----------
+    sample_df : DataFrame 
+        Pandas DataFrame containing a 'File' column with the name of each .raw file in the dataset (not full path). Defaults to None.
+
+    Methods
+    -------
+    run_alignment()
+        Aligns features across dataset. 
+    run_gapfill()
+        Runs gapfill. 
+    flag_errors()
+        Identifies features with potentially significant mass measurement errors based on rolling average and standard deviation of measured m/z.
+    flag_blank_features()
+        Calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.
+    export()
+        Writes feature list to .csv file. 
+        
+    """
     def __init__(self, sample_df):
         
         self.feature_list: DataFrame = None
@@ -24,15 +48,6 @@ class Features(Align, GapFill):
             self.feature_list = GapFill.GapFill(self.feature_list)
 
     def flag_errors(self):
-        """
-        This function identifies features with potentially significant mass measurement errors based on rolling average and standard deviation.
-
-        Args:
-            feature_list: A pandas DataFrame containing the aligned features with 'm/z Error (ppm)' and 'm/z Error (ppm) stdev' columns.
-
-        Returns:
-            The modified DataFrame with a new column 'mz error flag' indicating potential errors.
-        """
 
         self.feature_list = self.feature_list.sort_values(by=['Calculated m/z'])
         self.feature_list['rolling error'] = self.feature_list['m/z Error (ppm)'].rolling(int(len(self.feature_list)/50), center=True,min_periods=0).mean()
@@ -44,16 +59,7 @@ class Features(Align, GapFill):
 
         
     def flag_blank_features(self, blank_sample):
-        """
-        This function calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.
 
-        Args:
-            feature_list: A pandas DataFrame containing the aligned features with intensity columns prefixed with 'Intensity:'.
-            blankfile: The filename of the blank data file (assumed to be defined elsewhere).
-
-        Returns:
-            The modified DataFrame with a new column 'blank' flag indicating potential blank contamination.
-        """
         col = None
 
         for col in self.feature_list.columns:

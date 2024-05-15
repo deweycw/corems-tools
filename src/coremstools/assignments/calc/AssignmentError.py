@@ -2,13 +2,22 @@ from pandas import DataFrame
 from seaborn import scatterplot, kdeplot
 import matplotlib.pyplot as plt
 
-from coremstools.Parameters import Settings
-
 class AssignmentError:
+    """
+    Methods to produce plots of assignment error. 
+    """
+    def ErrorPlot( self, assignments, filename):
+        """
+        Method to produce plots of assignment error. 
 
-    def ErrorPlot( assignments, filename):
-
-        #### Plot and save error distribution figure
+        Parameters 
+        ----------
+        assignments : DataFrame 
+            CoreMS assignments, imported as a CSV file. 
+        filename : str
+            Name of JPG file to be saved.    
+        """
+        
         fig, ((ax1, ax2)) = plt.subplots(1,2)
         fig.set_size_inches(12, 6)
         scatterplot(x='m/z', y='m/z Error (ppm)', hue='Molecular Class', data=assignments, ax=ax1, edgecolor='none')
@@ -20,7 +29,17 @@ class AssignmentError:
         fig.savefig(filename, dpi=200,format='jpg')   
 
 
-    def RTAssignPlot(assignments, filename):
+    def RTAssignPlot(self, assignments, filename):
+        """
+        Method to produce plots of assignments classes across chromatographic separation. 
+
+        Parameters 
+        ----------
+        assignments : DataFrame 
+            CoreMS assignments, imported as a CSV file. 
+        filename : str
+            Name of JPG file to be saved.    
+        """
 
         assign_summary=[]
         for time in assignments['Time'].unique():

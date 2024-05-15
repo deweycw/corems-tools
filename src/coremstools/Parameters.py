@@ -27,11 +27,11 @@ class Settings:
         Textual difference between the name of the Thermo .raw file and the .csv file with the processed CoreMS assignments AND dispersity calculation. Defaults to _dispersity'
     """
 
-    raw_file_directory: str = None
-    assignments_directory: str = None
+    raw_file_directory: str = ''
+    assignments_directory: str = ''
     eic_tolerance: float = 5.0 # ppm 
     internal_std_mz: float = 678.2915 # defaults to mass of [cyanocobalamin]2+
-    sample_list: str = None # 
+    sample_list: str = '' # 
     csvfile_addend = '_assignments'
     dispersity_addend = '_dispersity'
     

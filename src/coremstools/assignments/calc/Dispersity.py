@@ -5,9 +5,21 @@ from corems.mass_spectra.input import rawFileReader
 from coremstools.Parameters import Settings
 
 class Dispersity:
+    """
+    Methods to produce plots of assignment error. 
+    """
+    def CalculateDispersity(self, sample, time_interval):
+        """
+        Method to calculate dispersity metric. 
 
-    def CalculateDispersity(sample, time_interval):
-
+        Parameters 
+        ----------
+        sample : str 
+            Sample name; corresponds to string in sampe list. 
+        time_interval : float
+            Time interval overwhich MS scans are averaged in CoreMS assignment.    
+        """
+        
         assignments_dir = Settings.assignments_directory
         rawfile_dir = Settings.raw_file_directory
         addend = Settings.csvfile_addend
