@@ -47,8 +47,8 @@ def StandardQC(samplelist, std_timerange, save_file='internal_std.jpg'):
         except:
             print('--File not found: ' + file)
 
-    axs['a'].get_legend().remove() #(loc='center left', bbox_to_anchor=(1, 0.5))
-    axs['a'].set_title('a', fontweight='bold', loc='left')
+    #axs['a'].get_legend().remove() #(loc='center left', bbox_to_anchor=(1, 0.5))
+    #axs['a'].set_title('Stand', fontweight='bold', loc='left')
     axs['a'].set_ylabel('Intensity (x 1e7)')
 
     samplelist=samplelist.set_index('File')
@@ -75,8 +75,8 @@ def StandardQC(samplelist, std_timerange, save_file='internal_std.jpg'):
     histplot(x='qc_area',data=samplelist,ax=axs['b'])
     axs['b'].set_xlabel('Internal Standard Peak Area')
 
-    xpltl = -.25
-    ypltl = 0.98
+    xpltl = -.0
+    ypltl = 1.05
     axs['a'].text(xpltl, ypltl,'a',
         horizontalalignment='center',
         verticalalignment='center',
