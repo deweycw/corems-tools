@@ -32,4 +32,4 @@ language = 'Python'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-autodoc_mock_imports = ["corems", "numpy", "scipy", "pandas", "tqdm", "matplotlib.pyplot", "matplotlib"]
+autodoc_mock_imports = ["corems", "numpy", "scipy", "pandas", "tqdm", "matplotlib.pyplot", "matplotlib","seaborn"]
