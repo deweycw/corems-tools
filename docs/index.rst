@@ -10,9 +10,9 @@ Welcome to coremstools's documentation!
 
    overview
    installation
-   coremstools
    corems-assignment
    workflow
+   coremstools
    examples
    
 

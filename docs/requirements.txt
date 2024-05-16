@@ -25,3 +25,4 @@ tqdm~=4.64.1
 psycopg2-binary
 sphinx_rtd_theme
 seaborn
+corems

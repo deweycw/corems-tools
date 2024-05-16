@@ -4,7 +4,7 @@ Typical Workflow
 Here, we outline a typical workflow for using CoreMS and CoreMSTools to process CoreMS assignments of large, multi-sample LC-MS datasets. The overall goal of the workflow is to generate a feature list. A feature list is a list of assignments that are least likely to be erroneous and, importantly, it includes the abundance of these assignments in each sample in the dataset. In addition to including molecular formulas and the intensities, feature lists also typically include - at a minimum - the measured m/z, assignment error, and retention time of each ion.
 
 The steps of a typical workflow can be divided into three groupings. 
-    1. Formula assignments. 
+    1. Formula assignments 
     2. Quality control checks
     3. Feature filtering 
 
