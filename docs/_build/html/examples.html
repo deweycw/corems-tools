@@ -21,7 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Modules" href="coremstools.html" /> 
+    <link rel="prev" title="Workflow" href="workflow.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,7 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coremstools.html">Modules</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Workflow</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#corems-assignment-script">CoreMS assignment script</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -77,6 +81,111 @@
              
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
+<section id="corems-assignment-script">
+<h2>CoreMS assignment script<a class="headerlink" href="#corems-assignment-script" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;./&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">corems.mass_spectra.input</span> <span class="kn">import</span> <span class="n">rawFileReader</span>
+<span class="kn">from</span> <span class="nn">corems.molecular_id.search.molecularFormulaSearch</span> <span class="kn">import</span> <span class="n">SearchMolecularFormulas</span>
+<span class="kn">from</span> <span class="nn">corems.encapsulation.factory.parameters</span> <span class="kn">import</span> <span class="n">MSParameters</span>
+<span class="kn">from</span> <span class="nn">corems.mass_spectrum.calc.Calibration</span> <span class="kn">import</span> <span class="n">MzDomainCalibration</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="k">def</span> <span class="nf">assign_formula</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">interval</span><span class="p">):</span>
+
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">mass_spectrum</span><span class="o">.</span><span class="n">min_picking_mz</span><span class="o">=</span><span class="mi">50</span>
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">mass_spectrum</span><span class="o">.</span><span class="n">max_picking_mz</span><span class="o">=</span><span class="mi">800</span>
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">ms_peak</span><span class="o">.</span><span class="n">peak_min_prominence_percent</span> <span class="o">=</span> <span class="mf">0.02</span>
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">molecular_search</span><span class="o">.</span><span class="n">min_ppm_error</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">molecular_search</span><span class="o">.</span><span class="n">max_ppm_error</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">mass_spectrum</span><span class="o">.</span><span class="n">min_calib_ppm_error</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">mass_spectrum</span><span class="o">.</span><span class="n">max_calib_ppm_error</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">MSParameters</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">url_database</span> <span class="o">=</span> <span class="s1">&#39;postgresql+psycopg2://coremsappdb:coremsapppnnl@localhost:5432/coremsapp&#39;</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">rawFileReader</span><span class="o">.</span><span class="n">ImportMassSpectraThermoMSFileReader</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">chromatogram_settings</span><span class="o">.</span><span class="n">scans</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">tic</span><span class="o">=</span><span class="n">parser</span><span class="o">.</span><span class="n">get_tic</span><span class="p">(</span><span class="n">ms_type</span><span class="o">=</span><span class="s1">&#39;MS&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tic_df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">tic</span><span class="o">.</span><span class="n">time</span><span class="p">,</span><span class="s1">&#39;scan&#39;</span><span class="p">:</span> <span class="n">tic</span><span class="o">.</span><span class="n">scans</span><span class="p">})</span>
+
+    <span class="n">ref_file</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_calibrants_pos.ref&#39;</span>
+
+    <span class="n">MSfiles</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">MSfiles</span><span class="p">[</span><span class="n">file</span><span class="p">]</span><span class="o">=</span><span class="n">parser</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">timestart</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;assiging at &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">timestart</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; min&#39;</span><span class="p">)</span>
+
+        <span class="n">scans</span><span class="o">=</span><span class="n">tic_df</span><span class="p">[</span><span class="n">tic_df</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">between</span><span class="p">(</span><span class="n">timestart</span><span class="p">,</span><span class="n">timestart</span><span class="o">+</span><span class="n">interval</span><span class="p">)]</span><span class="o">.</span><span class="n">scan</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="n">mass_spectrum</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_average_mass_spectrum_by_scanlist</span><span class="p">(</span><span class="n">scans</span><span class="p">)</span>
+
+        <span class="n">MzDomainCalibration</span><span class="p">(</span><span class="n">mass_spectrum</span><span class="p">,</span> <span class="n">refmasslist</span><span class="p">,</span><span class="n">mzsegment</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">])</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">min_dbe</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">max_dbe</span> <span class="o">=</span> <span class="mi">20</span>
+
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">usedAtoms</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">65</span><span class="p">)</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">usedAtoms</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">88</span><span class="p">)</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">usedAtoms</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">usedAtoms</span><span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">usedAtoms</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">used_atom_valences</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                                                                        <span class="s1">&#39;13C&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                                                                        <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                                                                        <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                                                                        <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                                                                        <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                                                                        <span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="mi">2</span>
+                                                                        <span class="p">}</span>
+
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">isProtonated</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">isRadical</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">molecular_search_settings</span><span class="o">.</span><span class="n">isAdduct</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">SearchMolecularFormulas</span><span class="p">(</span><span class="n">mass_spectrum</span><span class="p">,</span> <span class="n">first_hit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">ion_charge</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">run_worker_mass_spectrum</span><span class="p">()</span>
+        <span class="n">mass_spectrum</span><span class="o">.</span><span class="n">percentile_assigned</span><span class="p">(</span><span class="n">report_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">assignments</span><span class="o">=</span><span class="n">mass_spectrum</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+        <span class="n">assignments</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">timestart</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">assignments</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results</span><span class="p">,</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;/Volumes/IQX-Data/&quot;</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">interval</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">time_min</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">time_max</span> <span class="o">=</span> <span class="mi">30</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">time_min</span><span class="p">,</span><span class="n">time_max</span><span class="p">,</span><span class="n">interval</span><span class="p">))</span>
+
+    <span class="n">flist</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+    <span class="n">f_raw</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">flist</span> <span class="k">if</span> <span class="s1">&#39;.raw&#39;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">f_raw</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">assign_formula</span><span class="p">(</span><span class="n">file</span> <span class="o">=</span> <span class="n">data_dir</span><span class="o">+</span><span class="n">f</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="n">times</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">output_name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_assignments.csv&#39;</span>
+
+        <span class="n">output</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="n">output_name</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coremstools.Parameters</span> <span class="kn">import</span> <span class="n">Settings</span>
 <span class="kn">from</span> <span class="nn">coremstools.Assignments</span> <span class="kn">import</span> <span class="n">Assignments</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -98,12 +207,13 @@
 </pre></div>
 </div>
 </section>
+</section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="coremstools.html" class="btn btn-neutral float-left" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="workflow.html" class="btn btn-neutral float-left" title="Workflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
