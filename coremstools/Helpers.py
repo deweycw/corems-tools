@@ -6,7 +6,6 @@ import warnings
 warnings.filterwarnings("ignore")
 import sys
 sys.path.append("./")
-import matplotlib.pyplot as plt
 
 """
 Helper functions for CoreMS assignments.

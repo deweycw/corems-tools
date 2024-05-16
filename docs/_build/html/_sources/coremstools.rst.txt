@@ -5,9 +5,9 @@ Modules
 
    <hr>
 
-
 .. automodule:: coremstools.Assignments
    :members:
+   
 
    
 .. raw:: html

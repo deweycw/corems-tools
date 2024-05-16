@@ -14,8 +14,8 @@ release = '0.0.1'
 import os
 import sys
 sys.path.insert(0,os.path.abspath('..'))
-sys.path.append(os.path.abspath('/Users/christiandewey/CoreMS'))
-sys.path.append(os.path.abspath('/Users/christiandewey/CoreMS/ext_lib'))
+# sys.path.append(os.path.abspath('/Users/christiandewey/CoreMS'))
+# sys.path.append(os.path.abspath('/Users/christiandewey/CoreMS/ext_lib'))
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -32,3 +32,4 @@ language = 'Python'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
+autodoc_mock_imports = ["corems", "numpy", "scipy", "pandas", "tqdm", "matplotlib.pyplot", "matplotlib"]
