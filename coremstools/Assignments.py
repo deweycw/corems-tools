@@ -13,7 +13,7 @@ import coremstools.Helpers as lcmsfns
 
 class Assignments():
     """
-    Base class for initial processing of CoreMS assignments. Used before assembly of feature list. 
+    Base class for initial processing of CoreMS assignments. To be used before assembly of feature list. 
 
     Parameters 
     ----------
