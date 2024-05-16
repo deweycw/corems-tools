@@ -5,12 +5,13 @@ Welcome to coremstools's documentation!
     :members:
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
    :caption: Contents:
 
    overview
    installation
    coremstools
+   corems-assignment
    workflow
    examples
    

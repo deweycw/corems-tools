@@ -108,6 +108,9 @@ CoreMS assignment script
             
             output.to_csv(data_dir+output_name)
 
+CoreMSTools processing script
+-----------------------------
+
 .. code-block::
 
     from coremstools.Parameters import Settings

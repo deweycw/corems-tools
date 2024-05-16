@@ -1,34 +1,21 @@
-Typical Workflow
-================
+CoreMS Primer
+=============
 
-Here, we outline a typical workflow for using CoreMS and CoreMSTools to process CoreMS assignments of large, multi-sample LC-MS datasets. The overall goal of the workflow is to generate a feature list. A feature list is a list of assignments that are least likely to be erroneous and, importantly, it includes the abundance of these assignments in each sample in the dataset. In addition to including molecular formulas and the intensities, feature lists also typically include - at a minimum - the measured m/z, assignment error, and retention time of each ion.
+CoreMSTools requires formula assignments generated with CoreMS. It is typically easiest and fastest to write a standalone Python assignment script, and then to run the script at the command line through a virtual Python environment with all necessary dependencies. It is also possible to run CoreMS assignments in a Jupyter notebook, though performance tends to be slow. 
 
-The steps of a typical workflow can be divided into three groupings:
-    1. Formula assignment with CoreMS. 
-    2. Quality control checks
-    3. Feature filtering 
-
-Assignments with CoreMS are performed in Python. It is typically easiest and fastest to write an assignment script and to run the script at the command line. It is also possible to run CoreMS assignments in Jupyter notebook, though performance tends to be slow. 
-
-This section is not intended to provide a detailed description of performing formula assignments with CoreMS. However, we do provide a  some basic example for assigning formulas to a multi-sample LC-MS dataset.
+This section is not intended to provide a detailed description of performing formula assignments with CoreMS, but rather a  basic introduction to assigning formulas on a multi-sample LC-MS dataset, collected on an ultrahigh resolution instrument (FT-ICR-MS, Orbitrap MS).
 
 Importing Python modules 
 +++++++++++++++++++++++++
 
-.. code-block::
+We typically employ a subset of the modules available in CoreMS for our LC-MS analyses. These are listed below. Note that if you are not running a containerized version of CoreMS, you will need to save and run your assignment script from the top-level CoreMS directory. Otherwise Python will not be able to find CoreMS and its external packages.
 
-    import os
-    import warnings
-    import pandas as pd
-    import sys
+.. code-block::
 
     from corems.mass_spectra.input import rawFileReader
     from corems.molecular_id.search.molecularFormulaSearch import SearchMolecularFormulas
     from corems.encapsulation.factory.parameters import MSParameters
     from corems.mass_spectrum.calc.Calibration import MzDomainCalibration
-
-    sys.path.append('./')
-    warnings.filterwarnings('ignore')
 
 Defining assignment parameters
 ++++++++++++++++++++++++++++++
@@ -168,3 +155,114 @@ With these parameters set, the search can now be executed on the mass spectrum o
     
     assignments=mass_spectrum.to_dataframe()
 
+An example for LC-MS data
++++++++++++++++++++++++++
+
+When assigning LC-MS data, it is necessary to mass spectra corresponding to regular time intervals across the chromatographic separation. An individual mass spectrum object is created by averaging the scans within each interval. To accomplish this, we loop through the time range of the separation at the interval over which we wish to average, creating a mass spectrum object for each time interval, assigning formula to each mass spectrum object, and finally merging the assignments in each time interval into a single dataframe. We do this for each file in our dataset. 
+
+The example below demonstrates how to accomplish this. 
+
+.. code-block::
+
+    import os
+    import sys
+    sys.path.append('./')
+
+    import warnings
+    warnings.filterwarnings('ignore')
+
+    from corems.mass_spectra.input import rawFileReader
+    from corems.molecular_id.search.molecularFormulaSearch import SearchMolecularFormulas
+    from corems.encapsulation.factory.parameters import MSParameters
+    from corems.mass_spectrum.calc.Calibration import MzDomainCalibration
+
+    import pandas as pd
+
+    def assign_formula(file, times, interval): # by putting the assignment routine in a function, we can easily loop through and assign the raw files in our dataset
+
+        MSParameters.mass_spectrum.min_picking_mz=50
+        MSParameters.mass_spectrum.max_picking_mz=800
+        MSParameters.ms_peak.peak_min_prominence_percent = 0.02
+        MSParameters.molecular_search.min_ppm_error = -1
+        MSParameters.molecular_search.max_ppm_error = 1
+        MSParameters.mass_spectrum.min_calib_ppm_error = -1
+        MSParameters.mass_spectrum.max_calib_ppm_error = 1
+        MSParameters.molecular_search_settings.url_database = 'postgresql+psycopg2://coremsappdb:coremsapppnnl@localhost:5432/coremsapp'     
+
+        parser = rawFileReader.ImportMassSpectraThermoMSFileReader(file)
+        parser.chromatogram_settings.scans = (-1, -1)
+
+        tic=parser.get_tic(ms_type='MS')[0]
+        tic_df=pd.DataFrame({'time': tic.time,'scan': tic.scans})
+
+        ref_file = file.split('.')[0] + '_calibrants_pos.ref'  # we have a ref_file for each raw file, in the same directory as the raw files
+
+        MSfiles={}
+        MSfiles[file]=parser
+        results = []
+
+        for timestart in times:  # here we loop through our separation
+
+            print('assiging at ' + str(timestart) + ' min')
+
+            scans=tic_df[tic_df.time.between(timestart,timestart+interval)].scan.tolist()
+            
+            mass_spectrum = parser.get_average_mass_spectrum_by_scanlist(scans)
+
+            MzDomainCalibration(mass_spectrum, refmasslist,mzsegment=[0,1000]).run()
+
+            mass_spectrum.molecular_search_settings.min_dbe = 0
+            mass_spectrum.molecular_search_settings.max_dbe = 20
+
+            mass_spectrum.molecular_search_settings.usedAtoms['C'] = (1, 65)
+            mass_spectrum.molecular_search_settings.usedAtoms['H'] = (4, 88)
+            mass_spectrum.molecular_search_settings.usedAtoms['O'] = (0, 15)
+            mass_spectrum.molecular_search_settings.usedAtoms['N'] = (0, 15)
+            mass_spectrum.molecular_search_settings.usedAtoms['S'] = (0, 1)
+            
+            mass_spectrum.molecular_search_settings.used_atom_valences = {'C': 4,
+                                                                            '13C': 4,
+                                                                            'H': 1,
+                                                                            'D': 1,
+                                                                            'O': 2,
+                                                                            'N': 3,
+                                                                            'S': 2
+                                                                            }
+
+            mass_spectrum.molecular_search_settings.isProtonated = True
+            mass_spectrum.molecular_search_settings.isRadical = False
+            mass_spectrum.molecular_search_settings.isAdduct = False
+
+            SearchMolecularFormulas(mass_spectrum, first_hit=True,ion_charge=1).run_worker_mass_spectrum()
+            mass_spectrum.percentile_assigned(report_error=True)
+            
+            assignments=mass_spectrum.to_dataframe()
+            assignments['Time']=timestart # we add this column to keep track of the time window in which the ions were detected and assigned
+
+            results.append(assignments) # here we add assignments for each time interval to a list
+            
+        return(pd.concat(results,ignore_index=True)) # here we join the assignments of each time interval into a single dataframe. 
+
+
+    if __name__ == '__main__':
+
+        data_dir = "/Volumes/IQX-Data/"  # this directory contains all the .raw files in our dataset 
+
+        results = []
+
+        interval = 2
+        time_min = 2
+        time_max = 30
+
+        times = list(range(time_min,time_max,interval))
+
+        flist = os.listdir(data_dir)
+        f_raw = [f for f in flist if '.raw' in f]   # this creates a list of .raw files which we loop through
+        
+        for f in f_raw:
+
+            output = assign_formula(file = data_dir+f, times = times, interval=interval)
+            output['file'] = f
+            output_name = f.split('.')[0] + '_assignments.csv'
+            
+            output.to_csv(data_dir+output_name)  # we save assignment output for each raw fle as a csv
