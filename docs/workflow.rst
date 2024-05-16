@@ -43,4 +43,8 @@ With this assignments object, we can run quality control checks on our internals
 
 .. code-block::
 
-    assignments.run_internal_std_qc([10,12])
+    assignments.run_internal_std_qc(std_timeframe = [10,12])
+
+Running this method produces (a) a plot of the EICs of the internal standard m/z for each sample in the dataset, overlaid on one another; and (b) a histogram of the peak areas for the internal standard in each sample (Figure 1). If the peak area of the internal standard in a given sample exceeds 2 times the standard deviation of the mean peak area, the sample is flagged in the sample list as not passing the quality control test. 
+
+.. image:: ./example_qc_plot.jpg

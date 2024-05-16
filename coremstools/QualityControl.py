@@ -47,7 +47,7 @@ def StandardQC(samplelist, std_timerange, save_file='internal_std.jpg'):
         except:
             print('--File not found: ' + file)
 
-    axs['a'].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    axs['a'].get_legend().remove() #(loc='center left', bbox_to_anchor=(1, 0.5))
     axs['a'].set_title('a', fontweight='bold', loc='left')
     axs['a'].set_ylabel('Intensity (x 1e7)')
 
@@ -72,11 +72,23 @@ def StandardQC(samplelist, std_timerange, save_file='internal_std.jpg'):
 
     print('std dev of area of standard peak: ' + str(round(peak_stdv/peak_mean*100,1))+'%' )
 
-    #Create plot of overlaid standard EICs
     histplot(x='qc_area',data=samplelist,ax=axs['b'])
     axs['b'].set_xlabel('Internal Standard Peak Area')
-    axs['b'].set_title('b', fontweight='bold', loc='left')
 
-    plt.savefig(data_dir + save_file,dpi=300,format='jpg')
+    xpltl = -.25
+    ypltl = 0.98
+    axs['a'].text(xpltl, ypltl,'a',
+        horizontalalignment='center',
+        verticalalignment='center',
+        transform = axs['a'].transAxes, fontweight='bold', fontsize = 12)
+    axs['b'].text(xpltl, ypltl,'b',
+        horizontalalignment='center',
+        verticalalignment='center',
+        transform = axs['b'].transAxes, fontweight='bold', fontsize = 12)
+    
+    plt.savefig(data_dir + save_file, dpi=300, bbox_inches = 'tight', format='jpg')
 
-    return(samplelist)
+    samplelist.to_csv(Settings.raw_file_directory + Settings.sample_list)
+
+
+

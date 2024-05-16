@@ -50,8 +50,10 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="corems-assignment.html">CoreMS Primer</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Typical Workflow</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#formula-assignments">Formula assignments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#quality-control-checks">Quality control checks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#formula-assignments">Formula assignments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quality-control-checks">Quality control checks</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="coremstools.html">Modules</a></li>
@@ -113,13 +115,13 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">assignments</span> <span class="o">=</span> <span class="n">Assignments</span><span class="p">(</span><span class="n">sample_df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
 <section id="quality-control-checks">
-<h2>Quality control checks<a class="headerlink" href="#quality-control-checks" title="Link to this heading"></a></h2>
+<h3>Quality control checks<a class="headerlink" href="#quality-control-checks" title="Link to this heading"></a></h3>
 <p>With this assignments object, we can run quality control checks on our internals standard.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">assignments</span><span class="o">.</span><span class="n">run_internal_std_qc</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">12</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">assignments</span><span class="o">.</span><span class="n">run_internal_std_qc</span><span class="p">(</span><span class="n">std_timeframe</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">12</span><span class="p">])</span>
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
