@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="Python" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modules &mdash; coremstools 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=0ea5f55c"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Typical Workflow" href="workflow.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            coremstools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="corems-assignment.html">CoreMS Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Typical Workflow</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#coremstools.Assignments.Assignments"><code class="docutils literal notranslate"><span class="pre">Assignments</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.add_mol_class"><code class="docutils literal notranslate"><span class="pre">Assignments.add_mol_class()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_internal_std_qc"><code class="docutils literal notranslate"><span class="pre">Assignments.run_internal_std_qc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_assignment_error_plot"><code class="docutils literal notranslate"><span class="pre">Assignments.run_assignment_error_plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_dispersity_calculation"><code class="docutils literal notranslate"><span class="pre">Assignments.run_dispersity_calculation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#coremstools.FeatureList.Features"><code class="docutils literal notranslate"><span class="pre">Features</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.FeatureList.Features.run_alignment"><code class="docutils literal notranslate"><span class="pre">Features.run_alignment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.FeatureList.Features.run_gapfill"><code class="docutils literal notranslate"><span class="pre">Features.run_gapfill()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.FeatureList.Features.flag_errors"><code class="docutils literal notranslate"><span class="pre">Features.flag_errors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.FeatureList.Features.flag_blank_features"><code class="docutils literal notranslate"><span class="pre">Features.flag_blank_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.FeatureList.Features.export"><code class="docutils literal notranslate"><span class="pre">Features.export()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#coremstools.Parameters.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Parameters.Settings.raw_file_directory"><code class="docutils literal notranslate"><span class="pre">Settings.raw_file_directory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Parameters.Settings.assignments_directory"><code class="docutils literal notranslate"><span class="pre">Settings.assignments_directory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Parameters.Settings.eic_tolerance"><code class="docutils literal notranslate"><span class="pre">Settings.eic_tolerance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Parameters.Settings.internal_std_mz"><code class="docutils literal notranslate"><span class="pre">Settings.internal_std_mz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Parameters.Settings.sample_list"><code class="docutils literal notranslate"><span class="pre">Settings.sample_list</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Parameters.Settings.csvfile_addend"><code class="docutils literal notranslate"><span class="pre">Settings.csvfile_addend</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Parameters.Settings.dispersity_addend"><code class="docutils literal notranslate"><span class="pre">Settings.dispersity_addend</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">coremstools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Modules</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coremstools.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="modules">
+<h1>Modules<a class="headerlink" href="#modules" title="Link to this heading"></a></h1>
+<hr><dl class="py class" id="module-coremstools.Assignments">
+<dt class="sig sig-object py" id="coremstools.Assignments.Assignments">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coremstools.Assignments.</span></span><span class="sig-name descname"><span class="pre">Assignments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments" title="Link to this definition"></a></dt>
+<dd><p>Base class for initial processing of CoreMS assignments. To be used before assembly of feature list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sample_df</strong> (<em>DataFrame</em>) -- Pandas DataFrame containing a 'File' column with the name of each .raw file in the dataset (not full path). Defaults to None.</p></li>
+<li><p><strong>t_interval</strong> (<em>float</em>) -- Interval (min) over which scans are averaged in CoreMS LC assignments. Defaults to 2 (min).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.Assignments.Assignments.add_mol_class">
+<span class="sig-name descname"><span class="pre">add_mol_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.add_mol_class" title="Link to this definition"></a></dt>
+<dd><p>Adds molecular class to CoreMS assignments &amp; creates a 'Molecular Class' column. Altered assignment .csvs are rewritten with new columns.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_internal_std_qc">
+<span class="sig-name descname"><span class="pre">run_internal_std_qc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timerange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">12]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_internal_std_qc" title="Link to this definition"></a></dt>
+<dd><p>Runs the quality control checks with internal standard m/z. Returns copy of sample list DataFrame with additional columns for internal standard area, retention time, and QC pass/fail flag.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_assignment_error_plot">
+<span class="sig-name descname"><span class="pre">run_assignment_error_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_assignment_error_plot" title="Link to this definition"></a></dt>
+<dd><p>For each sample in the sample list, this method creates .jpg plots of (i) m/z Error (ppm) v. m/z and (ii) Molecular Classes of assignments over separation. The .jpgs are saved in the directory defined by Settings.assignments_directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_dispersity_calculation">
+<span class="sig-name descname"><span class="pre">run_dispersity_calculation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_dispersity_calculation" title="Link to this definition"></a></dt>
+<dd><p>Runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. <strong>*</strong> Currently quite slow. Would be good to do this calculation after the feature list is assembled. <strong>**</strong></p>
+</dd></dl>
+
+</dd></dl>
+
+<hr><dl class="py class" id="module-coremstools.FeatureList">
+<dt class="sig sig-object py" id="coremstools.FeatureList.Features">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coremstools.FeatureList.</span></span><span class="sig-name descname"><span class="pre">Features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.FeatureList.Features" title="Link to this definition"></a></dt>
+<dd><p>Base class for holding CoreMS features across a dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sample_df</strong> (<em>DataFrame</em>) -- Pandas DataFrame containing a 'File' column with the name of each .raw file in the dataset (not full path). Defaults to None.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.FeatureList.Features.run_alignment">
+<span class="sig-name descname"><span class="pre">run_alignment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.FeatureList.Features.run_alignment" title="Link to this definition"></a></dt>
+<dd><p>Aligns features across dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.FeatureList.Features.run_gapfill">
+<span class="sig-name descname"><span class="pre">run_gapfill</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.FeatureList.Features.run_gapfill" title="Link to this definition"></a></dt>
+<dd><p>Runs gapfill.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.FeatureList.Features.flag_errors">
+<span class="sig-name descname"><span class="pre">flag_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.FeatureList.Features.flag_errors" title="Link to this definition"></a></dt>
+<dd><p>Identifies features with potentially significant mass measurement errors based on rolling average and standard deviation of measured m/z.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.FeatureList.Features.flag_blank_features">
+<span class="sig-name descname"><span class="pre">flag_blank_features</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.FeatureList.Features.flag_blank_features" title="Link to this definition"></a></dt>
+<dd><p>Calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.FeatureList.Features.export">
+<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.FeatureList.Features.export" title="Link to this definition"></a></dt>
+<dd><p>Writes feature list to .csv file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<hr><dl class="py class" id="module-coremstools.Parameters">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coremstools.Parameters.</span></span><span class="sig-name descname"><span class="pre">Settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_file_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assignments_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eic_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_std_mz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">678.2915</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Parameters.Settings" title="Link to this definition"></a></dt>
+<dd><p>Settings class to store global settings for processing CoreMS assignments.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings.raw_file_directory">
+<span class="sig-name descname"><span class="pre">raw_file_directory</span></span><a class="headerlink" href="#coremstools.Parameters.Settings.raw_file_directory" title="Link to this definition"></a></dt>
+<dd><p>Full path to directory containing Thermo .raw files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings.assignments_directory">
+<span class="sig-name descname"><span class="pre">assignments_directory</span></span><a class="headerlink" href="#coremstools.Parameters.Settings.assignments_directory" title="Link to this definition"></a></dt>
+<dd><p>Full path to directory containing CoreMS assignment results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings.eic_tolerance">
+<span class="sig-name descname"><span class="pre">eic_tolerance</span></span><a class="headerlink" href="#coremstools.Parameters.Settings.eic_tolerance" title="Link to this definition"></a></dt>
+<dd><p>Tolerance (ppm) for extraction of ion chromatogram (from Thermo .raw file) of given m/z</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings.internal_std_mz">
+<span class="sig-name descname"><span class="pre">internal_std_mz</span></span><a class="headerlink" href="#coremstools.Parameters.Settings.internal_std_mz" title="Link to this definition"></a></dt>
+<dd><p>m/z of internal standard used for quality control checks; defaults to 678.2915, which is the mass of [cyanocobalamin]2+ (vitamin B12)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings.sample_list">
+<span class="sig-name descname"><span class="pre">sample_list</span></span><a class="headerlink" href="#coremstools.Parameters.Settings.sample_list" title="Link to this definition"></a></dt>
+<dd><p>Full path to .csv file containing sample list. This file will be imported as Pandas DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings.csvfile_addend">
+<span class="sig-name descname"><span class="pre">csvfile_addend</span></span><a class="headerlink" href="#coremstools.Parameters.Settings.csvfile_addend" title="Link to this definition"></a></dt>
+<dd><p>Textual difference between the name of the Thermo .raw file and the .csv file containing the unprocessed CoreMS assignments. If the .raw file is named SAMPLE.raw, then the assignments file is assumed to be named 'SAMPLE' + csvfile_addend + '.csv'. Defaults to '_assignments'.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="coremstools.Parameters.Settings.dispersity_addend">
+<span class="sig-name descname"><span class="pre">dispersity_addend</span></span><a class="headerlink" href="#coremstools.Parameters.Settings.dispersity_addend" title="Link to this definition"></a></dt>
+<dd><p>Textual difference between the name of the Thermo .raw file and the .csv file with the processed CoreMS assignments AND dispersity calculation. Defaults to _dispersity'</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="workflow.html" class="btn btn-neutral float-left" title="Typical Workflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Christian Dewey &amp; Rene Boiteau.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
