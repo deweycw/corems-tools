@@ -17,7 +17,7 @@ class AssignmentError:
         filename : str
             Name of JPG file to be saved.  
         n_molclass : int
-            Specifies number of molecular classes to explicitly represent in error plots. If set to 0, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented, with the remaing molecular classes represented as 'Other'. Unassigned m/z are always represented.    
+            Specifies number of molecular classes to explicitly represent in error plots. If set to 0, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented. 
         """
         
         fig, ((ax1, ax2)) = plt.subplots(1,2)
@@ -67,30 +67,3 @@ class AssignmentError:
         fig.tight_layout()
         fig.savefig(filename, dpi=200,format='jpg')   
 
-
-    def RTAssignPlot( assignments, filename):
-        """
-        Method to produce plots of assignments classes across chromatographic separation. 
-
-        Parameters 
-        ----------
-        assignments : DataFrame 
-            CoreMS assignments, imported as a CSV file. 
-        filename : str
-            Name of JPG file to be saved.    
-        """
-
-        assign_summary=[]
-        for time in assignments['Time'].unique():
-            current={}
-            current['Time']=time
-            for mol_class in assignments['Molecular Class'].unique():
-                current[mol_class]=len(assignments[(assignments['Molecular Class']==mol_class) & (assignments['Time']==time)])
-            assign_summary.append(current)
-
-        df=DataFrame(assign_summary)
-        df=df.sort_values(by='Time')
-
-        df.plot.bar(x='Time',y=df.columns[1:],stacked=True,ylabel='Peaks')
-        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,frameon=False)
-        plt.savefig(filename, bbox_inches='tight',format='jpg')

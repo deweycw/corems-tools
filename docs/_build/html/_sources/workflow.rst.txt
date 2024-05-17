@@ -44,6 +44,7 @@ Quality control
 
 Internal standard check
 ~~~~~~~~~~~~~~~~~~~~~~~
+
 With this assignments object, we can run quality control checks on our internals standard.
 
 .. code-block::
@@ -63,3 +64,14 @@ Running this method produces (a) a plot of the EICs of the internal standard m/z
 .. raw:: html
 
    <hr>
+
+Examine assignment error distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We can also plot the m/z error for each assignment across the mass range. This allows us to evaluate the calibration and whether there is a systematic drift in the data. 
+
+.. raw::html
+
+    <hr>
+
+.. image:: ./images/mz-error.jpg
