@@ -4,7 +4,7 @@ __version__ = "0.0.1"
 
 from pandas import DataFrame, read_csv
 
-import coremstools.AssignmentError as AssignmentError
+from coremstools.AssignmentError import AssignmentError
 import coremstools.QualityControl as QualityControl
 import coremstools.Dispersity as Dispersity
 from coremstools.Parameters import Settings
@@ -53,15 +53,16 @@ class Assignments():
 
         self.sample_df = QualityControl.StandardQC(self.sample_df, timerange) ######################################### need to check why this returns something
 
-    def run_assignment_error_plot(self):
-
+    def run_assignment_error_plot(self, n_molclass = -1):
+        
+        print('plotting m/z error plots for ...')   
         for f in self.sample_df['File']:
-
+            print('  '+ f)
             fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
             save_file = fpath.split('.')[0] + '_mz-error.jpg'
-            AssignmentError.ErrorPlot(read_csv(fpath), save_file)
-            save_file = fpath.split('.')[0] + '_rt-error.jpg'
-            AssignmentError.RTAssignPlot(read_csv(fpath), save_file)
+            AssignmentError.ErrorPlot(read_csv(fpath), save_file, n_molclass)
+            #save_file = fpath.split('.')[0] + '_rt-error.jpg'
+            #AssignmentError.RTAssignPlot(read_csv(fpath), save_file)
 
     def run_dispersity_calculation(self):
 
