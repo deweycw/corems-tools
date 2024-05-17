@@ -146,7 +146,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_internal_std_qc">
 <span class="sig-name descname"><span class="pre">run_internal_std_qc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timerange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">12]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_internal_std_qc" title="Link to this definition"></a></dt>
-<dd><p>Method to run the quality control checks with the internal standard m/z. Returns copy of sample list DataFrame with additional columns for internal standard area, retention time, and QC pass/fail flag.</p>
+<dd><p>Method to run the quality control checks with the internal standard m/z. Re-writes the sample list with additional columns for internal standard area, retention time, and QC pass/fail flag.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>timerange</strong> (<em>list</em>) -- A two-element list containing the minimum retention time and the maximum retention time between which to extract and plot the EIC for the internal standard. Defaults to [10, 12].</p>
@@ -157,7 +157,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_molclass_retention_plot">
 <span class="sig-name descname"><span class="pre">run_molclass_retention_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_molclass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_molclass_retention_plot" title="Link to this definition"></a></dt>
-<dd><p>Method to generate bar plots show the proportions of molecular classes assigned to m/z within each time interval of the separation. Unassigned m/z are also shown.</p>
+<dd><p>Method to generate bar plots showing the proportions of molecular classes assigned to m/z within each time interval of the separation. Unassigned m/z are also shown.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>n_molclass</strong> (<em>int</em>) -- Specifies number of molecular classes to explicitly represent in plots. If set to -1, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented. m/z with other molecular classes will be represented as 'Other'. Unassigned m/z are always represented.</p>

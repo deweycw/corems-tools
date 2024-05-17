@@ -57,4 +57,4 @@ class MolClassRetention:
 
         df.plot.bar(x='Time',y=df.columns[1:],stacked=True,ylabel='Peaks')
         plt.legend(bbox_to_anchor=(1.05, 1), title = 'Molecular Class', loc=2, borderaxespad=0.,frameon=False)
-        plt.savefig(filename, bbox_inches='tight',format='jpg')
+        plt.savefig(filename,dpi=200, bbox_inches='tight',format='jpg')

@@ -55,23 +55,50 @@ Running this method produces (a) a plot of the EICs of the internal standard m/z
 
 .. raw:: html
 
-   <hr>
+   <hr/>
 
 .. image:: ./images/internal_std.jpg
 
-**Figure 1.** **(a)** Overlain EICs corresponding to the m/z of the internal standard. EICs of the standard are shown for each sample in the dataset (60 samples total). **(b)** Histogram of peak areas of the internal standard EIC in all samples in the dataset. 
+**Figure 1.** **(a)** Overlain EICs corresponding to the m/z of the internal standard. EICs of the standard are shown for each sample in the dataset (60 samples total). **(b)** Histogram of peak areas of the internal standard EIC in all samples in the dataset. These data were collected on a Orbitrap IQ-X. 
 
 .. raw:: html
 
-   <hr>
+   <hr/>
 
 Examine assignment error distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can also plot the m/z error for each assignment across the mass range. This allows us to evaluate the calibration and whether there is a systematic drift in the data. 
+We can also plot the m/z error for each assignment across the mass range. This allows us to evaluate the calibration and whether there is a systematic drift in the data. An example of this is shown in Figure 2. 
 
-.. raw::html
+.. raw:: html
 
-    <hr>
+   <hr/>
+
 
 .. image:: ./images/mz-error.jpg
+
+**Figure 2.** **(a)** The assignment error for formulas in the CHO, CHON, and CHOS molecular classes across the mass range. **(b)** Kernel density estimation plots of assignment error for each time-averaged mass spectrum.
+
+.. raw:: html
+
+   <hr/>
+
+
+
+Examine retention by molecular class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Finally, we can examine the number of assignments in a subset (or all) of the possible molecular classes in a dataset, as well as the number of unassigned m/z, across the chromatographic separation. This analysis can reveal potentially problematic time-averaged mass spectra. 
+
+.. raw:: html
+
+   <hr/>
+
+
+.. image:: ./images/rt-mc.jpg
+
+**Figure 3.** Bar plot showing the number of formulas of each molecular class in each time-averaged mass spectrum across the chromatographic separation. 
+
+.. raw:: html
+
+   <hr/>
