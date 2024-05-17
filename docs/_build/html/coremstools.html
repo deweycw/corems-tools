@@ -53,9 +53,10 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#coremstools.Assignments.Assignments"><code class="docutils literal notranslate"><span class="pre">Assignments</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.add_mol_class"><code class="docutils literal notranslate"><span class="pre">Assignments.add_mol_class()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_internal_std_qc"><code class="docutils literal notranslate"><span class="pre">Assignments.run_internal_std_qc()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_assignment_error_plot"><code class="docutils literal notranslate"><span class="pre">Assignments.run_assignment_error_plot()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_dispersity_calculation"><code class="docutils literal notranslate"><span class="pre">Assignments.run_dispersity_calculation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_internal_std_qc"><code class="docutils literal notranslate"><span class="pre">Assignments.run_internal_std_qc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coremstools.Assignments.Assignments.run_molclass_retention_plot"><code class="docutils literal notranslate"><span class="pre">Assignments.run_molclass_retention_plot()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#coremstools.FeatureList.Features"><code class="docutils literal notranslate"><span class="pre">Features</span></code></a><ul>
@@ -122,25 +123,46 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="coremstools.Assignments.Assignments.add_mol_class">
 <span class="sig-name descname"><span class="pre">add_mol_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.add_mol_class" title="Link to this definition"></a></dt>
-<dd><p>Adds molecular class to CoreMS assignments &amp; creates a 'Molecular Class' column. Altered assignment .csvs are rewritten with new columns.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_internal_std_qc">
-<span class="sig-name descname"><span class="pre">run_internal_std_qc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timerange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">12]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_internal_std_qc" title="Link to this definition"></a></dt>
-<dd><p>Runs the quality control checks with internal standard m/z. Returns copy of sample list DataFrame with additional columns for internal standard area, retention time, and QC pass/fail flag.</p>
+<dd><p>Method to adds molecular class to CoreMS assignments &amp; creates a 'Molecular Class' column. Altered assignment .csvs are rewritten with new columns.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_assignment_error_plot">
-<span class="sig-name descname"><span class="pre">run_assignment_error_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_assignment_error_plot" title="Link to this definition"></a></dt>
-<dd><p>For each sample in the sample list, this method creates .jpg plots of (i) m/z Error (ppm) v. m/z and (ii) Molecular Classes of assignments over separation. The .jpgs are saved in the directory defined by Settings.assignments_directory.</p>
+<span class="sig-name descname"><span class="pre">run_assignment_error_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_molclass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_assignment_error_plot" title="Link to this definition"></a></dt>
+<dd><p>Method to generate assignment error plots for QC checks. For each sample in the sample list, this method creates .jpg plots of (i) m/z Error (ppm) v. m/z and (ii) Molecular Classes of assignments over separation. The .jpgs are saved in the directory defined by Settings.assignments_directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_molclass</strong> (<em>int</em>) -- Specifies number of molecular classes to explicitly represent in error plots. If set to -1, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_dispersity_calculation">
 <span class="sig-name descname"><span class="pre">run_dispersity_calculation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_dispersity_calculation" title="Link to this definition"></a></dt>
-<dd><p>Runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. <strong>*</strong> Currently quite slow. Would be good to do this calculation after the feature list is assembled. <strong>**</strong></p>
+<dd><p>Method to runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. Currently quite slow. Would be good to do this calculation after the feature list is assembled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_internal_std_qc">
+<span class="sig-name descname"><span class="pre">run_internal_std_qc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timerange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">12]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_internal_std_qc" title="Link to this definition"></a></dt>
+<dd><p>Method to run the quality control checks with the internal standard m/z. Returns copy of sample list DataFrame with additional columns for internal standard area, retention time, and QC pass/fail flag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timerange</strong> (<em>list</em>) -- A two-element list containing the minimum retention time and the maximum retention time between which to extract and plot the EIC for the internal standard. Defaults to [10, 12].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coremstools.Assignments.Assignments.run_molclass_retention_plot">
+<span class="sig-name descname"><span class="pre">run_molclass_retention_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_molclass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coremstools.Assignments.Assignments.run_molclass_retention_plot" title="Link to this definition"></a></dt>
+<dd><p>Method to generate bar plots show the proportions of molecular classes assigned to m/z within each time interval of the separation. Unassigned m/z are also shown.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_molclass</strong> (<em>int</em>) -- Specifies number of molecular classes to explicitly represent in plots. If set to -1, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented. m/z with other molecular classes will be represented as 'Other'. Unassigned m/z are always represented.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
