@@ -82,11 +82,11 @@ class Assignments():
         n_molclass : int
             Specifies number of molecular classes to explicitly represent in plots. If set to -1, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented. m/z with other molecular classes will be represented as 'Other'. Unassigned m/z are always represented. 
         '''
-        print('plotting m/z error plots for ...')   
+        print('plotting molecular classes v. retention time for ...')   
         for f in self.sample_df['File']:
             print('  '+ f)
             fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
-            save_file = fpath.split('.')[0] + '_rt-error.jpg'
+            save_file = fpath.split('.')[0] + '_rt-mc.jpg'
             MolClassRetention.RTAssignPlot(read_csv(fpath), save_file, n_molclass)
 
 
