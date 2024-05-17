@@ -68,7 +68,13 @@ Running this method produces (a) a plot of the EICs of the internal standard m/z
 Examine assignment error distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can also plot the m/z error for each assignment across the mass range. This allows us to evaluate the calibration and whether there is a systematic drift in the data. An example of this is shown in Figure 2. 
+We can also plot the m/z error for each assignment across the mass range, for each sample within the dataset.
+
+.. code-block::
+
+    assignments.run_assignment_error_plot(n_molclass = 3)
+    
+This allows us to evaluate the calibration and whether there is a systematic drift in the data. An example of this is shown in Figure 2. 
 
 .. raw:: html
 
@@ -77,7 +83,7 @@ We can also plot the m/z error for each assignment across the mass range. This a
 
 .. image:: ./images/mz-error.jpg
 
-**Figure 2.** **(a)** The assignment error for formulas in the CHO, CHON, and CHOS molecular classes across the mass range. **(b)** Kernel density estimation plots of assignment error for each time-averaged mass spectrum.
+**Figure 2.** **(a)** The assignment error for formulas in the CHO, CHON, and CHOS molecular classes across the mass range in one sample of the dataset. **(b)** Kernel density estimation plots of assignment error for each time-averaged mass spectrum for the same sample.
 
 .. raw:: html
 
@@ -90,6 +96,10 @@ Examine retention by molecular class
 
 Finally, we can examine the number of assignments in a subset (or all) of the possible molecular classes in a dataset, as well as the number of unassigned m/z, across the chromatographic separation. This analysis can reveal potentially problematic time-averaged mass spectra. 
 
+.. code-block::
+
+    assignments.run_molclass_retention_plot(n_molclass = 4)
+
 .. raw:: html
 
    <hr/>
@@ -97,7 +107,7 @@ Finally, we can examine the number of assignments in a subset (or all) of the po
 
 .. image:: ./images/rt-mc.jpg
 
-**Figure 3.** Bar plot showing the number of formulas of each molecular class in each time-averaged mass spectrum across the chromatographic separation. 
+**Figure 3.** Bar plot showing the number of formulas of each molecular class in each time-averaged mass spectrum across the chromatographic separation of one sample.
 
 .. raw:: html
 
