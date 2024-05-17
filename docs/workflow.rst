@@ -94,7 +94,7 @@ This allows us to evaluate the calibration and whether there is a systematic dri
 Examine retention by molecular class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Finally, we can examine the number of assignments in a subset (or all) of the possible molecular classes in a dataset, as well as the number of unassigned m/z, across the chromatographic separation. This analysis can reveal potentially problematic time-averaged mass spectra. 
+Finally, we can examine the number of assignments in a subset (or all) of the possible molecular classes in a dataset, as well as the number of unassigned m/z, across the chromatographic separation. This analysis can reveal potentially problematic time-averaged mass spectra. An example is shown in Figure 3. 
 
 .. code-block::
 
