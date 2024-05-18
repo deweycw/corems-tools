@@ -100,7 +100,8 @@ class Assignments():
 
         for f in self.sample_df['File']:
             print('  ' + f)
-            Dispersity.CalculateDispersity(f, self.t_int)
+            fcsv = f.split('.')[0] + Settings.csvfile_addend + '.csv'
+            Dispersity.CalculateDispersity(Settings.assignments_directory +  fcsv)
 
 
 

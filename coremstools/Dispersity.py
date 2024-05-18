@@ -4,8 +4,13 @@ from pandas import DataFrame, read_csv
 from corems.mass_spectra.input import rawFileReader
 from coremstools.Parameters import Settings
 
-from pathlib import Path
+import multiprocessing
+from tqdm import tqdm
 
+def get_chroma_worker(args):
+    parser = rawFileReader.ImportMassSpectraThermoMSFileReader(args[1])
+    eic = parser.get_eics(target_mzs=args[0], tic_data={}, peak_detection=False, smooth=False)
+    return eic
 
 def CalculateDispersity(path_to_features):
     """
@@ -44,20 +49,40 @@ def CalculateDispersity(path_to_features):
             return d, t
         else:
             return nan, nan
-                
+    
+    print(path_to_features)
     features_df = read_csv(path_to_features)
-    sample_list = list(features_df['File'].unique())
+    try:
+        sample_list = list(features_df['file'].unique())
+    except:
+        sample_list = list(features_df['File'].unique())
+
     mz_list = list(features_df['m/z'].unique())
 
     for sample in sample_list:
 
-        rawfile = rawfile_dir + sample
-        parser = rawFileReader.ImportMassSpectraThermoMSFileReader(rawfile)
+        rawfile = rawfile_dir + sample.split('/')[-1]
 
-        eics = parser.get_eics(target_mzs=mz_list, tic_data={}, peak_detection=False, smooth=False)
+        print(rawfile)
+        
+        #parser = rawFileReader.ImportMassSpectraThermoMSFileReader(rawfile)
+
+        all_eics = []
+
+        args = [(target_mz, rawfile ) for target_mz in mz_list]
+        print('getting EICs')
+        p = multiprocessing.Pool()
+        for eic in tqdm(p.imap_unordered(get_chroma_worker, args)):
+            all_eics.append(eic)
+        p.close()
+        p.join()
+
+        eics = {k: v for d in all_eics for k, v in d.items()}
+        #eics = parser.get_eics(target_mzs=mz_list, tic_data={}, peak_detection=False, smooth=False)
 
         features_df['Dispersity: ' + sample], features_df['Retention Time: ' + sample] = zip(*features_df.apply(get_dispersity_rt, eics = eics, axis=1))
     
     features_df.to_csv(path_to_features, index=False)
+
 
 

@@ -34,4 +34,5 @@ class Settings:
     sample_list: str = '' # 
     csvfile_addend = '_assignments'
     dispersity_addend = '_dispersity'
+    time_interval = 2
     
