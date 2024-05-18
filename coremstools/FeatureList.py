@@ -2,14 +2,16 @@ from pandas import DataFrame
 import coremstools.Align as Align
 import coremstools.GapFill as GapFill 
 from coremstools.Parameters import Settings
+import coremstools.Dispersity as Dispersity
 
-class Features():
+
+class Features:
     """
     Base class for holding CoreMS features across a dataset. 
 
     Parameters 
     ----------
-    sample_df : DataFrame 
+    sample_list : DataFrame 
         Pandas DataFrame containing a 'File' column with the name of each .raw file in the dataset (not full path). Defaults to None.
 
     Methods
@@ -26,14 +28,14 @@ class Features():
         Writes feature list to .csv file. 
         
     """
-    def __init__(self, sample_df):
+    def __init__(self, sample_list):
         
         self.feature_list: DataFrame = None
-        self.sample_df = sample_df
+        self.sample_list = sample_list
 
     def run_alignment(self):
 
-        self.feature_list = Align.Align(self.sample_df)
+        self.feature_list = Align.Align(self.sample_list)
 
     def run_gapfill(self):
 
@@ -67,3 +69,20 @@ class Features():
         self.feature_list['Max Intensity'] = self.feature_list.filter(regex='Intensity').max(axis=1)
         self.feature_list['blank'] = self.feature_list[blank_sample_col].fillna(0) / self.feature_list['Max Intensity']
     
+
+
+    def run_dispersity_calculation(self):
+        '''
+        Method to run dispersity calculation on each feature list. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. 
+        '''
+        
+        print('running dispersity calculation on ...')
+
+        for f in self.sample_list['File']:
+            print('  ' + f)
+            Dispersity.CalculateDispersity(f)
+
+class _FeatureListDispersity(Features):
+
+    def __init__(self, feature_list,sample_list):
+        super.__init__(feature_list, sample_list)
