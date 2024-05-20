@@ -3,10 +3,8 @@ from seaborn import scatterplot, kdeplot
 import matplotlib.pyplot as plt
 
 class AssignmentError:
-    """
-    Methods to produce plots of assignment error. 
-    """
-    def ErrorPlot( assignments, filename, n_molclass):
+
+    def ErrorPlot( self, assignments, filename, n_molclass):
         """
         Method to produce plots of assignment error. 
 
@@ -22,8 +20,8 @@ class AssignmentError:
         
         fig, ((ax1, ax2)) = plt.subplots(1,2)
         fig.set_size_inches(12, 6)
+            
         plot_data = assignments.copy()
-
 
         if n_molclass > 0:
             from itertools import islice
@@ -51,6 +49,7 @@ class AssignmentError:
         ax1.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,frameon=False)
         ax1.set_title('m/z Error v. Measured m/z', fontweight='bold', loc='center', fontsize='medium')
         kdeplot(x='m/z Error (ppm)', data=assignments, hue='Time', ax=ax2, legend=False)
+
         #ax2.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,frameon=False)
         ax2.set_title('m/z Error Distribution, Each Time Window', fontweight='bold', loc='center', fontsize='medium' )
         xpltl = -.05

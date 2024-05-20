@@ -1,0 +1,33 @@
+Assignments h5 file:
+    - instead of saving assignments of each sample as .csv, save as group in .h5 for dataset
+
+Assignments class:
+## OPERATES ON SINGLE SAMPLE IN DATASET
+    - holds raw assignments for a sample
+    - how raw assignments can be imported:
+        * as .csv; one .csv per sample
+        * as .h5; one .h5 per sample OR one h5 group within one h5 file containing assignments of dataset  
+    - methods that can operate on assignments of a sample:
+        * internal standard qc check 
+        * assignment error plots 
+        * molecular class v. retention
+        * dispersity calculation 
+        * export as .csv (if incoming format if .h5)
+
+FeatureList class:
+## OPERATES ON ALL SAMPLES IN DATASET
+    - holds the feature list for an entire dataset 
+    - construction of feature list:
+        * build from assignments of each sample in dataset 
+            ~ loop thru samples (how depends on file type of sample assignments / dataset)
+        * need to avoid loading all sample assignments into memory
+            ~ use .h5 and only load needed data?
+            ~ dask?
+            ~ write feature list to group in dataset .h5?
+    - methods that can operate on feature list:
+        * dispersity calculation 
+            ~ for eic extraction, save each eic in .h5 
+        * feature alignment
+        * gapfilling 
+        * blank feature filtering
+        * export as .csv
