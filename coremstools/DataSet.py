@@ -53,11 +53,6 @@ class DataSet(Features):
     def run_internal_std_qc(self):
         '''
         Method to run the quality control checks with the internal standard m/z for all samples in dataset. Re-writes the sample list with additional columns for internal standard area, retention time, and QC pass/fail flag.
-
-        Parameters
-        ----------
-        std_timerange : list
-            A two-element list containing the minimum retention time and the maximum retention time between which to extract and plot the EIC for the internal standard.
         '''
 
         self.sample_list = QualityControl.StandardQC(self, self.sample_list)
