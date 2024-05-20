@@ -1,7 +1,8 @@
 import pandas as pd
+import os
+
 from coremstools.Parameters import Settings
-from coremstools.assignments.factory.AssignmentsClass import Assignments 
-import os 
+from coremstools.DataSet import DataSet
 
 if __name__ == '__main__':
     
@@ -14,5 +15,4 @@ if __name__ == '__main__':
 
     df = pd.DataFrame({'File':flist})
     print(df)
-    raw_assignments = Assignments(sample_df=df)
-    raw_assignments.run_internal_std_qc([10,12])
+
