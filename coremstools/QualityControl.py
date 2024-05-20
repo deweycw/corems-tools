@@ -1,5 +1,7 @@
 from pandas import Series, DataFrame
+from numpy import inf, nan
 import matplotlib.pyplot as plt
+
 from seaborn import histplot
 
 from corems.mass_spectra.input import rawFileReader
@@ -7,7 +9,8 @@ from corems.mass_spectra.input import rawFileReader
 from coremstools.Parameters import Settings
 
 class QualityControl:
-    def StandardQC(self, samplelist, std_timerange, save_file='internal_std.jpg'):
+
+    def StandardQC(self, samplelist, save_file='internal_std.jpg'):
             
         """
         Plots the extracted ion chromatogram (EIC) of the internal standard for each sample,
@@ -24,6 +27,7 @@ class QualityControl:
 
         data_dir = Settings.raw_file_directory
         stdmass = Settings.internal_std_mz
+        std_timerange = Settings.std_time_range
 
         area={}
         rt={}
@@ -33,22 +37,22 @@ class QualityControl:
         
         print('running QC check ...')
         for file in samplelist['File'].unique():
-            try:
-                parser = rawFileReader.ImportMassSpectraThermoMSFileReader(data_dir+file)
-                parser.chromatogram_settings.eic_tolerance_ppm= Settings.eic_tolerance
+            #try:
+            parser = rawFileReader.ImportMassSpectraThermoMSFileReader(data_dir+file)
+            parser.chromatogram_settings.eic_tolerance_ppm= Settings.eic_tolerance
 
-                EIC=parser.get_eics(target_mzs=[stdmass],tic_data={},peak_detection=False,smooth=False)
-                
-                df=DataFrame({'EIC':EIC[0][stdmass].eic,'time':EIC[0][stdmass].time})
-                df_sub=df[df['time'].between(std_timerange[0],std_timerange[1])]
-                area[file]=(sum(df_sub['EIC']))
-                rt[file]=(df_sub.time[df_sub.EIC==df_sub.EIC.max()].max())
-                axs['a'].plot(df_sub['time'],df_sub['EIC']/1e7,label=file[11:])
-                print('  ' + file)
-            except:
-                print('--File not found: ' + file)
+            EIC=parser.get_eics(target_mzs=[stdmass],tic_data={},peak_detection=False,smooth=False)
+            
+            df=DataFrame({'EIC':EIC[0][stdmass].eic,'time':EIC[0][stdmass].time})
+            df_sub=df[df['time'].between(std_timerange[0],std_timerange[1])]
+            area[file]=(sum(df_sub['EIC']))
+            rt[file]=(df_sub.time[df_sub.EIC==df_sub.EIC.max()].max())
+            axs['a'].plot(df_sub['time'],df_sub['EIC']/1e7,label=file[11:])
+            print('  ' + file)
+            '''except:
+                print('--File not found: ' + file)'''
 
-        axs['a'].get_legend().remove() #(loc='center left', bbox_to_anchor=(1, 0.5))
+        #axs['a'].get_legend().remove() #(loc='center left', bbox_to_anchor=(1, 0.5))
         axs['a'].set_title('a', fontweight='bold', loc='left')
         axs['a'].set_ylabel('Intensity (x 1e7)')
 
@@ -72,10 +76,11 @@ class QualityControl:
         peak_stdv=samplelist[samplelist.qc_pass==1].qc_area.std()
 
         print('std dev of area of standard peak: ' + str(round(peak_stdv/peak_mean*100,1))+'%' )
-
+   
+        samplelist.replace([inf, -inf], nan, inplace=True)
         histplot(x='qc_area',data=samplelist,ax=axs['b'])
         axs['b'].set_xlabel('Internal Standard Peak Area')
-
+        
         xpltl = -.25
         ypltl = 0.98
         axs['a'].text(xpltl, ypltl,'a',

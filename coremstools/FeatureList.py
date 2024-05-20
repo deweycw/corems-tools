@@ -28,42 +28,56 @@ class Features:
     """
     def __init__(self, sample_list):
         
-        self.feature_list: DataFrame = None
+        self.feature_list_df: DataFrame = None
         self.sample_list = sample_list
 
     def run_alignment(self):
 
-        self.feature_list = Align.Align(self.sample_list)
+        self.feature_list_df = Align.Align(self, self.sample_list)
 
     def run_gapfill(self):
 
-        if self.feature_list is not None:
-            self.feature_list = GapFill.GapFill(self.feature_list)
+        if self.feature_list_df is not None:
+            self.feature_list_df = GapFill.GapFill(self.feature_list_df)
         else:
             self.run_alignment()
-            self.feature_list = GapFill.GapFill(self.feature_list)
-
+            self.feature_list_df = GapFill.GapFill(self.feature_list_df)
+        
     def flag_errors(self):
 
-        self.feature_list = self.feature_list.sort_values(by=['Calculated m/z'])
-        self.feature_list['rolling error'] = self.feature_list['m/z Error (ppm)'].rolling(int(len(self.feature_list)/50), center=True,min_periods=0).mean()
-        self.feature_list['mz error flag'] = abs(self.feature_list['rolling error'] - self.feature_list['m/z Error (ppm)']) / (4*self.feature_list['m/z Error (ppm) stdev'])
+        self.feature_list_df = self.feature_list_df.sort_values(by=['Calculated m/z'])
+        self.feature_list_df['rolling error'] = self.feature_list_df['m/z Error (ppm)'].rolling(int(len(self.feature_list_df)/50), center=True,min_periods=0).mean()
+        self.feature_list_df['mz error flag'] = abs(self.feature_list_df['rolling error'] - self.feature_list_df['m/z Error (ppm)']) / (4*self.feature_list_df['m/z Error (ppm) stdev'])
 
         
-    def flag_blank_features(self, blank_sample):
+    def flag_blank_features(self):
+
+        print('flagging blank features')
+
+        if self.feature_list_df is None:
+
+            self.run_alignment()
 
         col = None
 
-        for col in self.feature_list.columns:
+        blank_sample = Settings.blank_sample_name
+
+        if '.' in blank_sample:
+        
+            blank_sample = blank_sample.split('.')[0]
+
+        for col in self.feature_list_df.columns:
             
-            if blank_sample.split('.')[0] in col:
+            if blank_sample in col:
 
                 blank_sample_col = col
 
-        self.feature_list['Max Intensity'] = self.feature_list.filter(regex='Intensity').max(axis=1)
-        self.feature_list['blank'] = self.feature_list[blank_sample_col].fillna(0) / self.feature_list['Max Intensity']
-    
+        self.feature_list_df['Max Intensity'] = self.feature_list_df.filter(regex='Intensity').max(axis=1)
+        self.feature_list_df['blank'] = self.feature_list_df[blank_sample_col].fillna(0) / self.feature_list_df['Max Intensity']
+
+        #self.feature_list_df.to_csv(Settings.assignments_directory + 'feature_list_df.csv')
+
 
     def export(self):
 
-        self.feature_list.to_csv(Settings.assignments_directory + 'feature_list.csv', index=False)
+        self.feature_list_df.to_csv(Settings.assignments_directory + 'feature_list_df.csv', index=False)

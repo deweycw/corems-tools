@@ -11,6 +11,9 @@ from coremstools.AssignmentError import AssignmentError
 from coremstools.MolClassRetention import MolClassRetention
 from coremstools.Dispersity import Dispersity
 
+import coremstools.AssignmentCalcs as lcmsfns
+
+
 class DataSet(Features):
     """
     Base class for CoreMS dataset object. Intended to work with .h5 file containing dataset assignments, feature list, eics, etc. 
@@ -27,7 +30,7 @@ class DataSet(Features):
         self.sample_list = sample_list
 
         self.time_interval = Settings.time_interval
-        self.feature_list = Features(self.sample_list)
+        self.feature_list = None
 
         if (self.sample_list == None) & (self.path_to_sample_list != None):
             
@@ -57,14 +60,19 @@ class DataSet(Features):
             A two-element list containing the minimum retention time and the maximum retention time between which to extract and plot the EIC for the internal standard.
         '''
 
-        self.sample_list = QualityControl.StandardQC(self.sample_list,self.time_interval)
+        self.sample_list = QualityControl.StandardQC(self, self.sample_list)
 
         if self.path_to_sample_list == None:
             self.path_to_sample_list == Settings.assignments_directory + 'sample_list.csv'
         
         print('Sample list saved to assignments directory, with pass/fail columns')
-        self.sample_list.to_csv(self.path_to_sample_list)
+        self.sample_list.to_csv(self.path_to_sample_list, index =False)
 
+    def _check_for_molclass(self, assignments, fpath):
+
+        if 'Molecular Class' not in assignments.columns:
+            assignments = lcmsfns.add_mol_class(assignments)
+            assignments.to_csv(fpath, index = False)
 
     def run_assignment_error_plots(self, n_molclass = -1):
         '''
@@ -81,7 +89,12 @@ class DataSet(Features):
             print('  '+ f)
             fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
             save_file = fpath.split('.')[0] + '_mz-error.jpg'
-            AssignmentError.ErrorPlot(read_csv(fpath), save_file, n_molclass)
+
+            assignments = read_csv(fpath)
+
+            self._check_for_molclass(assignments, fpath)
+
+            AssignmentError.ErrorPlot(self, assignments, save_file, n_molclass)
             
     
     def run_molclass_retention_plots(self, n_molclass = -1):
@@ -94,40 +107,56 @@ class DataSet(Features):
             Specifies number of molecular classes to explicitly represent in plots. If set to -1, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented. m/z with other molecular classes will be represented as 'Other'. Unassigned m/z are always represented. 
         '''
         print('\nplotting molecular classes v. retention time for ...')   
-        for f in self.sample_df['File']:
+        for f in self.sample_list['File']:
             print('  '+ f)
             fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
+
+            assignments = read_csv(fpath)
+
+            self._check_for_molclass(assignments, fpath)
+
             save_file = fpath.split('.')[0] + '_rt-mc.jpg'
-            MolClassRetention.RTAssignPlot(read_csv(fpath), save_file, n_molclass)
+            MolClassRetention.RTAssignPlot(self, assignments, save_file, n_molclass)
 
 
-    def run_dispersity_calculation(self):
+    def run_dispersity_calcs(self):
         '''
         Method to runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. Currently quite slow. Would be good to do this calculation after the feature list is assembled.
         '''
-        
 
         print('\nrunning dispersity calculation on ...')
 
-        for f in self.sample_df['File']:
+        for f in self.sample_list['File']:
             print('  ' + f)
             fcsv = f.split('.')[0] + Settings.csvfile_addend + '.csv'
-            Dispersity.CalculateDispersity(Settings.assignments_directory +  fcsv)
+            Dispersity.CalculateDispersity(self, Settings.assignments_directory +  fcsv)
 
-    def run_alignment_on_dset(self):
+    def _check_for_feature_list(self):
 
+        if self.feature_list == None:
+            self.feature_list = Features(self.sample_list)
+
+    def run_alignment(self):
+        
+        self._check_for_feature_list()
         self.feature_list.run_alignment()
 
-    def run_gapfill_on_dset(self):
+
+    def run_gapfill(self):
         
+        self._check_for_feature_list()
         self.feature_list.run_gapfill()
 
-    def flag_blank_features_in_dset(self, blank_sample):
 
-        self.feature_list.flag_blank_features(blank_sample)
+    def flag_blank_features(self):
+
+        self._check_for_feature_list()
+        self.feature_list.flag_blank_features()
+
 
     def export_feature_list(self):
 
+        self._check_for_feature_list()
         self.feature_list.export()
         
 

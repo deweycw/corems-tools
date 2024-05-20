@@ -6,7 +6,7 @@ from coremstools.Parameters import Settings
 
 class Align:
 
-    def Align(self, sample_df):
+    def Align(self, sample_list):
 
         def build_masterresults_dict(shared_columns, averaged_cols):
             
@@ -46,7 +46,7 @@ class Align:
 
         masterresults = build_masterresults_dict(shared_columns, averaged_cols)
 
-        for file in sample_df['File']:
+        for file in sample_list['File']:
 
             print('  ' + file)
 
@@ -114,6 +114,7 @@ class Align:
         results_df = DataFrame(masterresults).fillna(0)
         cols_at_end = [c for c in results_df.columns if 'Intensity' in c ]
         results_df = results_df[[c for c in results_df if c not in cols_at_end] + [c for c in cols_at_end if c in results_df]]
+        
         return(results_df)
         
 

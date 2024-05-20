@@ -4,3 +4,5 @@ env/
 *.egg-info
 *.pyc
 *cpython*
+.raw
+testdata/
