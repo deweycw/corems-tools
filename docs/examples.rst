@@ -111,23 +111,39 @@ CoreMS assignment script
 CoreMSTools processing script
 -----------------------------
 
+
 .. code-block::
+    import warnings
+    warnings.filterwarnings('ignore')
 
     from coremstools.Parameters import Settings
-    from coremstools.Assignments import Assignments 
-    import pandas as pd
-        
+    from coremstools.DataSet import DataSet
+
     if __name__ == '__main__':
         
-        Settings.raw_file_directory = "/Volumes/IQX-Data/"
+        Settings.raw_file_directory = './test/testdata/'
+        Settings.assignments_directory = Settings.raw_file_directory
         Settings.internal_std_mz = 678.2915
+        Settings.std_time_range = [7,10]
+        Settings.time_interval = 2
+        Settings.blank_sample_name = '20221103_LBA_Boiteau_Zorbax3p5_qh2o_fullmz'
 
-        flist = []
-        for f in os.listdir(Settings.raw_file_directory):
-            if '.raw' in f:
-                flist.append(f)
+        dset = DataSet(path_to_sample_list = Settings.raw_file_directory + 'sample_list.csv')
 
-        df = pd.DataFrame({'File':flist})
+        dset.run_internal_std_qc()
 
-        raw_assignments = Assignments(sample_df=df)
-        raw_assignments.run_internal_std_qc([10,12])
+        dset.run_assignment_error_plots()
+
+        dset.run_molclass_retention_plots()
+
+        dset.run_dispersity_calcs()
+
+        dset.run_alignment()
+
+        dset.run_gapfill()
+
+        dset.flag_blank_features()
+
+        dset.export_feature_list()
+
+
