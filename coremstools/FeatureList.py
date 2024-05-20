@@ -24,7 +24,6 @@ class Features:
         Calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.
     export()
         Writes feature list to .csv file. 
-        
     """
     def __init__(self, sample_list):
         

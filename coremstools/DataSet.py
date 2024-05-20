@@ -16,12 +16,15 @@ import coremstools.AssignmentCalcs as lcmsfns
 
 class DataSet(Features):
     """
-    Base class for CoreMS dataset object. Intended to work with .h5 file containing dataset assignments, feature list, eics, etc. 
+    Base class for CoreMS dataset object.
 
     Parameters 
     ----------
-    path_to_dataset_file : str 
-        Full path to dataset file. 
+    path_to_sample_list : str 
+        Full path to dataset .csv file. Must contain a column called 'File' with a list of the Thermo .raw files in the dataset. Required if sample_list is not defined. 
+    sample_list : DataFrame
+        DataFrame containing sample list. Must contain a column called 'File' with a list of the Thermo .raw files in the dataset. Required if path_to_sample_list is not defined. 
+
     """
 
     def __init__(self, path_to_sample_list=None, sample_list=None):
@@ -73,6 +76,7 @@ class DataSet(Features):
         if 'Molecular Class' not in assignments.columns:
             assignments = lcmsfns.add_mol_class(assignments)
             assignments.to_csv(fpath, index = False)
+
 
     def run_assignment_error_plots(self, n_molclass = -1):
         '''
@@ -137,25 +141,34 @@ class DataSet(Features):
             self.feature_list = Features(self.sample_list)
 
     def run_alignment(self):
-        
+        '''
+        Method to run alignment of features across dataset.
+        '''
+
         self._check_for_feature_list()
         self.feature_list.run_alignment()
 
 
     def run_gapfill(self):
-        
+        '''
+        Method to perform gapfilling of features across dataset.
+        '''        
         self._check_for_feature_list()
         self.feature_list.run_gapfill()
 
 
     def flag_blank_features(self):
-
+        '''
+        Method to flag features that appear in blank.
+        '''
         self._check_for_feature_list()
         self.feature_list.flag_blank_features()
 
 
     def export_feature_list(self):
-
+        '''
+        Method to export feature list as .csv file. Will be exported to the directory defined in Parameters.Settings.assignments_directory.
+        '''
         self._check_for_feature_list()
         self.feature_list.export()
         
