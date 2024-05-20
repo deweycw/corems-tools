@@ -3,9 +3,7 @@ from seaborn import scatterplot, kdeplot
 import matplotlib.pyplot as plt
 
 class AssignmentError:
-    """
-    Methods to produce plots of assignment error. 
-    """
+
     def ErrorPlot( assignments, filename, n_molclass):
         """
         Method to produce plots of assignment error. 

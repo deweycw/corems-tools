@@ -10,37 +10,34 @@ import coremstools.QualityControl as QualityControl
 import coremstools.Dispersity as Dispersity
 from coremstools.Parameters import Settings
 import coremstools.Helpers as lcmsfns
+import h5py
 
+from coremstools.AssignmentCalcs import AssignmentCalcs
 
-class Assignments():
+class Assignments(AssignmentCalcs):
     """
-    Base class for initial processing of CoreMS assignments. To be used before assembly of feature list. 
+    Base class for initial processing of CoreMS assignments.
 
     Parameters 
     ----------
-    sample_df : DataFrame 
-        Pandas DataFrame containing a 'File' column with the name of each .raw file in the dataset (not full path). Defaults to None.
     t_interval : float
         Interval (min) over which scans are averaged in CoreMS LC assignments. Defaults to 2 (min).   
     """
 
-    def __init__(self, sample_df, t_interval = 2):
+    def __init__(self, sample_name):
+
+        self.sample_name = sample_name
         
-        self.t_int = t_interval
-        self.sample_df = sample_df     # dataframe
+        pass
 
-    def add_mol_class(self):
-        '''
-        Method to adds molecular class to CoreMS assignments & creates a 'Molecular Class' column. Altered assignment .csvs are rewritten with new columns. 
-        '''
-        for f in self.sample_df['File']:
+    def import_assignments(self, file_name, file_type = '.h5'):
 
-            fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
-            df = read_csv(fpath)
-            heter = lcmsfns.get_heteroatoms(df)
-            molclasses = lcmsfns.get_mol_class(heter)
-            df2 = lcmsfns.assign_mol_class(df,molclasses)
-            df2.to_csv(fpath, index = False)
+        if file_type == '.h5':
+
+            dataset_file = h5py.File('mytestfile.hdf5', 'r')
+
+
+
 
     def run_internal_std_qc(self,timerange = [10,12]):
         '''
