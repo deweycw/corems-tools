@@ -5,7 +5,7 @@ Modules
 
    <hr>
 
-.. automodule:: coremstools.Assignments
+.. automodule:: coremstools.DataSet
    :members:
    
 
