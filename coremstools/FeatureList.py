@@ -1,9 +1,7 @@
 from pandas import DataFrame
-import coremstools.Align as Align
-import coremstools.GapFill as GapFill 
+from coremstools.Align import Align
+from coremstools.GapFill import GapFill 
 from coremstools.Parameters import Settings
-import coremstools.Dispersity as Dispersity
-
 
 class Features:
     """
@@ -51,10 +49,6 @@ class Features:
         self.feature_list['rolling error'] = self.feature_list['m/z Error (ppm)'].rolling(int(len(self.feature_list)/50), center=True,min_periods=0).mean()
         self.feature_list['mz error flag'] = abs(self.feature_list['rolling error'] - self.feature_list['m/z Error (ppm)']) / (4*self.feature_list['m/z Error (ppm) stdev'])
 
-    def export(self):
-
-        self.feature_list.to_csv(Settings.assignments_directory + 'feature_list.csv', index=False)
-
         
     def flag_blank_features(self, blank_sample):
 
@@ -70,19 +64,6 @@ class Features:
         self.feature_list['blank'] = self.feature_list[blank_sample_col].fillna(0) / self.feature_list['Max Intensity']
     
 
+    def export(self):
 
-    def run_dispersity_calculation(self):
-        '''
-        Method to run dispersity calculation on each feature list. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. 
-        '''
-        
-        print('running dispersity calculation on ...')
-
-        for f in self.sample_list['File']:
-            print('  ' + f)
-            Dispersity.CalculateDispersity(f)
-
-class _FeatureListDispersity(Features):
-
-    def __init__(self, feature_list,sample_list):
-        super.__init__(feature_list, sample_list)
+        self.feature_list.to_csv(Settings.assignments_directory + 'feature_list.csv', index=False)

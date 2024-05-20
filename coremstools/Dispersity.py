@@ -4,85 +4,61 @@ from pandas import DataFrame, read_csv
 from corems.mass_spectra.input import rawFileReader
 from coremstools.Parameters import Settings
 
-import multiprocessing
 from tqdm import tqdm
 
-def get_chroma_worker(args):
-    parser = rawFileReader.ImportMassSpectraThermoMSFileReader(args[1])
-    eic = parser.get_eics(target_mzs=args[0], tic_data={}, peak_detection=False, smooth=False)
-    return eic
 
-def CalculateDispersity(path_to_features):
+class Dispersity:
     """
-    Method to calculate dispersity metric. 
-
-    Parameters 
-    ----------
-    path_to_features : str
-        The full path to the feature list or CoreMS assignment output (i.e., the file containing the m/zs to extract) 
+    Methods to produce plots of assignment error. 
     """
-    rawfile_dir = Settings.raw_file_directory
+    def CalculateDispersity(self, sample, time_interval):
+        """
+        Method to calculate dispersity metric. 
 
-    time_interval = Settings.time_interval
-
-    def get_dispersity_rt(row, eics):
-
-        mz = row['m/z']
-        time = [row['Time'], row['Time'] + time_interval]
-        full_chroma = DataFrame({'EIC':eics[0][mz].eic, 'time':eics[0][mz].time})
-        tsub_chroma = full_chroma[full_chroma['time'].between(time[0],time[1])]
-        tsub_chroma.sort_values(by='EIC',ascending=False)
+        Parameters 
+        ----------
+        sample : str 
+            Sample name; corresponds to string in sampe list. 
+        time_interval : float
+            Time interval overwhich MS scans are averaged in CoreMS assignment.    
+        """
         
-        tsub_chroma['cumulative'] = tsub_chroma.cumsum()['EIC']/tsub_chroma.sum()['EIC']
+        assignments_dir = Settings.assignments_directory
+        rawfile_dir = Settings.raw_file_directory
+        addend = Settings.csvfile_addend
 
-        n_points = len(tsub_chroma[tsub_chroma['cumulative']<0.5]+1)
-        
-        if n_points < 3:
-            n_points = 3
+        def get_dispersity_rt(row, eics):
 
-        peak_chroma = tsub_chroma.head(n_points)
+            mz = row['m/z']
+            time = [row['Time'], row['Time'] + time_interval]
+            full_chroma = DataFrame({'EIC':eics[0][mz].eic, 'time':eics[0][mz].time})
+            tsub_chroma = full_chroma[full_chroma['time'].between(time[0],time[1])]
+            tsub_chroma.sort_values(by='EIC',ascending=False)
             
-        if peak_chroma['EIC'].sum() > 0:
-            d = peak_chroma['time'].std()
-            t = average(peak_chroma['time'], weights=peak_chroma['EIC']) 
+            tsub_chroma['cumulative'] = tsub_chroma.cumsum()['EIC']/tsub_chroma.sum()['EIC']
 
-            return d, t
-        else:
-            return nan, nan
-    
-    print(path_to_features)
-    features_df = read_csv(path_to_features)
-    try:
-        sample_list = list(features_df['file'].unique())
-    except:
-        sample_list = list(features_df['File'].unique())
+            n_points = len(tsub_chroma[tsub_chroma['cumulative']<0.5]+1)
+            
+            if n_points < 3:
+                n_points = 3
 
-    mz_list = list(features_df['m/z'].unique())
+            peak_chroma = tsub_chroma.head(n_points)
+                
+            if peak_chroma['EIC'].sum() > 0:
+                d = peak_chroma['time'].std()
+                t = average(peak_chroma['time'], weights=peak_chroma['EIC']) 
 
-    for sample in sample_list:
+                return d, t
+            else:
+                return nan, nan
 
-        rawfile = rawfile_dir + sample.split('/')[-1]
-
-        print(rawfile)
+        rawfile = rawfile_dir + sample
+        parser = rawFileReader.ImportMassSpectraThermoMSFileReader( rawfile)
         
-        #parser = rawFileReader.ImportMassSpectraThermoMSFileReader(rawfile)
+        assignments_file = assignments_dir + sample.split('.')[0] + addend + '.csv'
+        assignments = read_csv(assignments_file)
 
-        all_eics = []
-
-        args = [(target_mz, rawfile ) for target_mz in mz_list]
-        print('getting EICs')
-        p = multiprocessing.Pool()
-        for eic in tqdm(p.imap_unordered(get_chroma_worker, args)):
-            all_eics.append(eic)
-        p.close()
-        p.join()
-
-        eics = {k: v for d in all_eics for k, v in d.items()}
-        #eics = parser.get_eics(target_mzs=mz_list, tic_data={}, peak_detection=False, smooth=False)
-
-        features_df['Dispersity: ' + sample], features_df['Retention Time: ' + sample] = zip(*features_df.apply(get_dispersity_rt, eics = eics, axis=1))
-    
-    features_df.to_csv(path_to_features, index=False)
-
-
-
+        mzs = list(assignments['m/z'].drop_duplicates())
+        eics = parser.get_eics(target_mzs=mzs, tic_data={}, peak_detection=False, smooth=False)
+        assignments['Dispersity'], assignments['Retention Time'] = zip(*assignments.apply(get_dispersity_rt, eics = eics, axis=1))
+        assignments.to_csv(assignments_dir + sample.split('.')[0] + '_dispersity.csv', index=False)

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class AssignmentError:
 
-    def ErrorPlot( assignments, filename, n_molclass):
+    def ErrorPlot( self, assignments, filename, n_molclass):
         """
         Method to produce plots of assignment error. 
 

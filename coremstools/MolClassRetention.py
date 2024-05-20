@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class MolClassRetention:
 
-    def RTAssignPlot( assignments, filename, n_molclass):
+    def RTAssignPlot( self, assignments, jpg_filename, n_molclass):
         """
         Method to produce plots of assignments classes across chromatographic separation. 
 
@@ -57,4 +57,4 @@ class MolClassRetention:
 
         df.plot.bar(x='Time',y=df.columns[1:],stacked=True,ylabel='Peaks')
         plt.legend(bbox_to_anchor=(1.05, 1), title = 'Molecular Class', loc=2, borderaxespad=0.,frameon=False)
-        plt.savefig(filename,dpi=200, bbox_inches='tight',format='jpg')
+        plt.savefig(jpg_filename,dpi=200, bbox_inches='tight',format='jpg')
