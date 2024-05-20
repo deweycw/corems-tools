@@ -154,6 +154,7 @@ Example
 -------
 
 .. code-block::
+    
     import warnings
     warnings.filterwarnings('ignore')
 
