@@ -142,7 +142,11 @@ class DataSet(Features):
         self._check_for_feature_list()
         self.feature_list.run_gapfill()
 
+    def calc_rolling_error(self):
 
+        self._check_for_feature_list()
+        self.feature_list.flag_errors()
+        
     def flag_blank_features(self):
 
         self._check_for_feature_list()
