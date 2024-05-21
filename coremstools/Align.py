@@ -7,7 +7,14 @@ from coremstools.Parameters import Settings
 class Align:
 
     def Align(self, sample_list):
+        """
+        Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
+        Parameters 
+        ----------
+        sample_list : str
+            Dataframe containing sample list. Must contain 'File' column with the name of each Thermo .raw file in the dataset. 
+        """
         def build_masterresults_dict(shared_columns, averaged_cols):
             
             masterresults={}

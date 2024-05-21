@@ -44,8 +44,13 @@ class Features:
         
     def flag_errors(self):
 
-        self.feature_list_df = self.feature_list_df.sort_values(by=['Calculated m/z'])
-        self.feature_list_df['rolling error'] = self.feature_list_df['m/z Error (ppm)'].rolling(int(len(self.feature_list_df)/50), center=True,min_periods=0).mean()
+        '''
+        Method that (1) calculates a rolling average of the assignment error, from lowest to highest calculated m/z, for each feature in the feature list, and (2) calculates an error flag, which is the absolute value of the difference of the rolling average error and the average error of the individual feature divided by 4 times the standard deviation of the m/z error for the feature. '''
+
+        self.feature_list_df.sort_values(by=['Calculated m/z'], inplace=True)
+
+        self.feature_list_df['rolling error'] = self.feature_list_df['m/z Error (ppm)'].rolling(int(len(self.feature_list_df)/50), center=True, min_periods=0).mean()
+
         self.feature_list_df['mz error flag'] = abs(self.feature_list_df['rolling error'] - self.feature_list_df['m/z Error (ppm)']) / (4*self.feature_list_df['m/z Error (ppm) stdev'])
 
         

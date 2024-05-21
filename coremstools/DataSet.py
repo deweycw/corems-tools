@@ -136,9 +136,9 @@ class DataSet(Features):
             self.feature_list = Features(self.sample_list)
 
     def run_alignment(self):
-        '''
-        Method to run alignment of features across dataset.
-        '''
+        """
+        Method to assemble an aligned feature list for the dataset. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
+        """
 
         self._check_for_feature_list()
         self.feature_list.run_alignment()
@@ -150,6 +150,12 @@ class DataSet(Features):
         '''        
         self._check_for_feature_list()
         self.feature_list.run_gapfill()
+
+
+    def calc_rolling_error(self):
+
+        self._check_for_feature_list()
+        self.feature_list.flag_errors()
 
 
     def flag_blank_features(self):
