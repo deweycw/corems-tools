@@ -94,6 +94,8 @@ class QualityControl:
         
         plt.savefig(data_dir + save_file, dpi=300, bbox_inches = 'tight', format='jpg')
 
+        samplelist.reset_index(inplace=True)
+
         return samplelist
         
 

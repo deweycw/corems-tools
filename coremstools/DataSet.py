@@ -47,7 +47,7 @@ class DataSet(Features):
 
     def _initialize_from_sample_list_file(self):
 
-        self.sample_list = read_csv(self.path_to_sample_list)
+        self.sample_list = read_csv(self.path_to_sample_list, index_col = None)
 
 
     def run_internal_std_qc(self):
