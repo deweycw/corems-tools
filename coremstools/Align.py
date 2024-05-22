@@ -1,12 +1,14 @@
 from numpy import mean, std
 from tqdm import tqdm
 import numpy as np
+import pandas as pd
 import dask.dataframe as dd
+
 from coremstools.Parameters import Settings
 
 class Align:
 
-    def Align(self, sample_list):
+    def Align_experimental(self, sample_list):
         """
         Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
@@ -15,9 +17,47 @@ class Align:
         sample_list : str
             Dataframe containing sample list. Must contain 'File' column with the name of each Thermo .raw file in the dataset. 
         """
+        def ensure_same_columns(list_sample_csv):
+            
+            all_cols = []
+            correct_order = []
+
+            for sample_csv in list_sample_csv:
+                
+                print('\t' + sample_csv.split('/')[-1].split('.')[0])
+                sample_cols = list(pd.read_csv(sample_csv).columns)
+                if len(sample_cols) > len(correct_order):
+
+                    correct_order = sample_cols
+
+                temp = [col for col in sample_cols if col not in all_cols]
+                
+                all_cols = all_cols + temp
+            
+            temp_order = [c for c in correct_order if (c != 'Time') & (c != 'file') & ('Unnamed' not in c)]
+            correct_order = ['file', 'Time'] + temp_order 
+
+            for sample_csv in list_sample_csv:
+                
+                sample_temp = pd.read_csv(sample_csv)
+                
+                for col in all_cols:
+                    
+                    if col not in sample_temp.columns:
+                        
+                        sample_temp[col] = np.nan
+                
+                sample_temp = sample_temp[correct_order]
+                sample_temp.to_csv(sample_csv, index=False)
+            
+        print('running alignment...')
 
         assignments_dir = Settings.assignments_directory
-
+        
+        list_sample_csv = [assignments_dir + f.replace('.raw', Settings.dispersity_addend + '.csv') for f in sample_list['File']]
+        print('\tchecking columns...')
+        ensure_same_columns(list_sample_csv)
+        
         shared_columns = ['Time', 'Molecular Formula','Molecular Class', 'Ion Charge', 'Calculated m/z', 'Heteroatom Class',  'DBE']
 
         averaged_cols = ['m/z',
@@ -30,26 +70,23 @@ class Align:
                     'S/N',
                     'Dispersity']
         
-        print('running alignment ...')
-                
         glob_str = assignments_dir + '*' + Settings.dispersity_addend + '.csv'
 
-        all_results = dd.read_csv(glob_str)
+        all_results_read = dd.read_csv(list_sample_csv)
 
-           
-        all_results = all_results[all_results['Molecular Formula'].notnull()]
+        all_results_shrink = all_results_read[all_results_read['Molecular Formula'].notnull()]
+        
+        def add_feature(row):
 
-        all_results['feature'] = all_results['Molecular Formula'] + '--' + str(all_results['Time'])
+            z = row['Molecular Formula'] + str(row['Time'])
+            return z
+        
+        all_results_shrink['feature'] = all_results_shrink.apply(add_feature, axis = 1) #['Molecular Formula'] + '--' + str(all_results_shrink['Time'])
+        
+        print('\tresetting index...')
+        all_results = all_results_shrink.set_index('feature', sort = False)
 
-        all_results = all_results.set_index('feature')
-
-        #files = list(sample_list['File'])
-
-        #features = all_results.drop_duplicates(subset = ['feature'])['feature']
-
-        #features.set_index('feature', inplace = True)
-
-        averaged_params = all_results[averaged_cols].copy()
+        averaged_params = all_results[averaged_cols]
 
         averaged = averaged_params.groupby(by='feature').mean()
 
@@ -57,18 +94,17 @@ class Align:
 
         joined = averaged.join(stdev,lsuffix = '_mean', rsuffix = '_sd')
 
-        shared = all_results[shared_columns].copy()
+        shared = all_results[shared_columns]
+        
 
         joined = joined.join(shared)
 
         for file in sample_list['File']:
 
-            print(file)
-            
             sub = all_results[all_results['file'] == file].copy()
             
-            sub = sub.rename(columns = {'Peak Height':'Intensity in: ' + file})
-            
+            sub= sub.rename(columns = {'Peak Height':'Intensity in: ' + file})
+             
             joined = joined.join(sub['Intensity in: ' + file])
 
         n_samples = all_results.groupby(by='feature').size()
@@ -76,39 +112,17 @@ class Align:
         n_samples = n_samples.rename('N Samples')
 
         joined = joined.join(n_samples.to_frame(name='N Samples'))
-
-        print(joined.columns)
-
+        
+        joined['feature'] = joined['Molecular Formula'] + str(joined['Time'])
+        joined = joined.drop_duplicates(subset=['feature'])
         print('writing to .csv...')
 
-        joined.to_csv(Settings.assignments_directory + 'feature_list.csv', single_file = True)
-
+        joined.to_csv(Settings.assignments_directory + 'feature_list.csv',index = False, single_file = True, header_first_partition_only = True)
+        
         return joined
         
-    def old():            
-        
-        pass 
-        '''print('  writing N Samples column')
 
-        pbar = tqdm(masterresults['m/z'].keys(), ncols=100)
-
-        for key in pbar:
-
-            masterresults['N Samples'][key] = len(masterresults['m/z'][key])
-
-            for c in averaged_cols:
-
-                masterresults[c+' stdev'][key] = std(masterresults[c][key])
-                masterresults[c][key] = mean(masterresults[c][key])
-        results_df = DataFrame(masterresults).fillna(0)
-        cols_at_end = [c for c in results_df.columns if 'Intensity' in c ]
-        results_df = results_df[[c for c in results_df if c not in cols_at_end] + [c for c in cols_at_end if c in results_df]]
-        
-        return(results_df)'''
-    
-
-
-def old(self, sample_list):
+    def Align(self, sample_list):
 
         assignments_dir = Settings.assignments_directory
         disp_addend = Settings.dispersity_addend
@@ -123,7 +137,8 @@ def old(self, sample_list):
             
             results = results[results['Molecular Formula'].notnull()]
             
-            results['feature'] = list(zip(results['Time'],results['Molecular Formula']))
+            #results['feature'] = list(zip(results['Time'],results['Molecular Formula']))
+            results['feature'] = str(results['Time']) + results['Molecular Formula']
             
             file_name = file.replace('.csv','').split('/')[-1]
 
