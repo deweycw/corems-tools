@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 class GapFill:
 
-    def GapFill(self, results):
+    def GapFill(results):
 
         print('performing gap fill')
 

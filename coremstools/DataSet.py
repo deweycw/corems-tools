@@ -84,7 +84,7 @@ class DataSet(Features):
             print('  '+ f)
             fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
             save_file = fpath.split('.')[0] + '_mz-error.jpg'
-            
+
             assignments = read_csv(fpath)
 
             self._check_for_molclass(assignments, fpath)
@@ -126,12 +126,10 @@ class DataSet(Features):
             fcsv = f.split('.')[0] + Settings.csvfile_addend + '.csv'
             Dispersity.CalculateDispersity(self, Settings.assignments_directory +  fcsv)
 
-
     def _check_for_feature_list(self):
 
         if self.feature_list == None:
             self.feature_list = Features(self.sample_list)
-
 
     def run_alignment(self):
         """
