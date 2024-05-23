@@ -95,8 +95,8 @@ class Features:
     def export_csv(self):
 
         print('writing to .csv...')
-        dir = '/home/christiandewey/Dropbox/'
-        #dir = Settings.assignments_directory
+        #dir = '/home/christiandewey/Dropbox/'
+        dir = Settings.assignments_directory
         self.feature_list_ddf.to_csv(dir + 'feature_list.csv',index = False) #, single_file = True, header_first_partition_only = True)
         
         #self.feature_list_ddf.to_csv(Settings.assignments_directory + 'feature_list-leg.csv',index = False)
