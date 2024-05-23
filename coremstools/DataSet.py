@@ -170,12 +170,12 @@ class DataSet(Features):
         self.feature_list.run_alignment(include_dispersity, experimental)
 
 
-    def run_gapfill(self):
+    def run_gapfill(self, include_dispersity = True, experimental = False):
         '''
         Method to perform gapfilling of features across dataset.
         '''        
         self._check_for_feature_list()
-        self.feature_list.run_gapfill()
+        self.feature_list.run_gapfill(include_dispersity, experimental)
 
 
     def calc_rolling_error(self):

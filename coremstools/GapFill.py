@@ -31,6 +31,7 @@ class GapFill:
                 if features_df.iloc[ix]['Confidence Score'] < max(matches['Confidence Score']):
                     print('\tyes2')
                     features_df.iloc[ix]['gapfill flag'] = True
+                    print(features_df.iloc[ix]['gapfill flag'])
 
         return features_df
     

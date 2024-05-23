@@ -32,7 +32,7 @@ class Features:
         self.feature_list_ddf = None
         self.sample_list = sample_list
 
-    def run_alignment(self,include_dispersity, experimental = False):
+    def run_alignment(self,include_dispersity, experimental):
         
         if experimental:
         
@@ -43,7 +43,7 @@ class Features:
             self.feature_list_ddf = Align.Align(self, self.sample_list, include_dispersity)
 
 
-    def run_gapfill(self):
+    def run_gapfill(self, include_dispersity, experimental):
 
         if self.feature_list_ddf is not None:
             self.feature_list_ddf = GapFill.GapFill(self, self.feature_list_ddf)
