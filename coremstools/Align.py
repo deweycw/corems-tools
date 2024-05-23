@@ -8,9 +8,10 @@ ProgressBar().register()
 
 from coremstools.Parameters import Settings
 
+
 class Align:
 
-    def Align(self, sample_list):
+    def Align(self, sample_list, include_dispersity = True):
         """
         Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
@@ -37,6 +38,8 @@ class Align:
 
             return masterresults
 
+        
+
         assignments_dir = Settings.assignments_directory
         disp_addend = Settings.dispersity_addend
 
@@ -49,6 +52,16 @@ class Align:
                     'Confidence Score',
                     'S/N',
                     'Dispersity']
+        
+        if include_dispersity is False:
+
+            averaged_cols = ['m/z',
+                    'm/z Error (ppm)',
+                    'Calibrated m/z',
+                    'Resolving Power',
+                    'Confidence Score',
+                    'S/N']
+
         print('running alignment on ...')
                 
         elements=[]
@@ -132,7 +145,7 @@ class Align:
         return(results_df)
 
 
-    def Align_exp(self, sample_list):
+    def Align_exp(self, sample_list, include_dispersity = True):
         """
         Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 

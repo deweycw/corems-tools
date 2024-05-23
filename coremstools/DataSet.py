@@ -53,6 +53,17 @@ class DataSet(Features):
 
         self.sample_list = read_csv(self.path_to_sample_list, index_col = None)
 
+    def assign_mol_class(self):
+        '''
+        Method to assign Molecular Classes to CoreMS assignment results.
+        ''' 
+
+        for f in self.sample_list['File']:
+            df = read_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + '.csv'))
+            df.to_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + 'backup.csv'))
+            df = lcmsfns.add_mol_class(df)
+            df.to_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + '.csv'))
+
 
     def run_internal_std_qc(self):
         '''
@@ -142,13 +153,21 @@ class DataSet(Features):
                 pass
         
 
-    def run_alignment(self):
+    def run_alignment(self, include_dispersity = True, experimental = False):
         """
         Method to assemble an aligned feature list for the dataset. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
+
+        Parameters
+        ----------
+        include_dispersity : bool
+            Flag indicating whether or not to include dispersity in feature list. If set to False, dispersity will not be include. Default is True. 
+        
+        experimental : bool
+            Flag indicating whether to use experimental funcationality for alignment. Default is False.
         """
 
         self._check_for_feature_list()
-        self.feature_list.run_alignment()
+        self.feature_list.run_alignment(include_dispersity, experimental)
 
 
     def run_gapfill(self):

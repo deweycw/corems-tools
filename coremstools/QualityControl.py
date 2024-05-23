@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from seaborn import histplot
 
 from corems.mass_spectra.input import rawFileReader
-
+from corems.encapsulation.factory.parameters import LCMSParameters
 from coremstools.Parameters import Settings
 
 class QualityControl:
@@ -28,7 +28,7 @@ class QualityControl:
         data_dir = Settings.raw_file_directory
         stdmass = Settings.internal_std_mz
         std_timerange = Settings.std_time_range
-
+        LCMSParameters.lc_ms.scans=(-1,-1)
         area={}
         rt={}
 

@@ -2,6 +2,8 @@ from numpy import average, nan
 from pandas import DataFrame, read_csv
 
 from corems.mass_spectra.input import rawFileReader
+from corems.encapsulation.factory.parameters import LCMSParameters
+
 from coremstools.Parameters import Settings
 
 from tqdm import tqdm
@@ -23,7 +25,7 @@ class Dispersity:
             Time interval overwhich MS scans are averaged in CoreMS assignment.    
         """
         
-
+        LCMSParameters.lc_ms.scans=(-1,-1)
         addend = Settings.csvfile_addend
         time_interval = Settings.time_interval
 

@@ -5,7 +5,7 @@ from tqdm import tqdm
 class GapFill:
     
     def GapFill(self, features_df):
-
+        
         features_df['gapfill'] = False
         features_df['gapfill flag'] = False
 
@@ -23,13 +23,13 @@ class GapFill:
             matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
 
             if(len(matches.index) > 1):
-
+                print('yes1')
                 features_df.iloc[ix]['gapfill'] = True
 
                 features_df.iloc[ix][features_df.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
 
                 if features_df.iloc[ix]['Confidence Score'] < max(matches['Confidence Score']):
-                    
+                    print('\tyes2')
                     features_df.iloc[ix]['gapfill flag'] = True
 
         return features_df

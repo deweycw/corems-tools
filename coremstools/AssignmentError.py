@@ -1,6 +1,7 @@
 from pandas import DataFrame
 from seaborn import scatterplot, kdeplot
 import matplotlib.pyplot as plt
+import coremstools.AssignmentCalcs as calcs
 
 class AssignmentError:
 
