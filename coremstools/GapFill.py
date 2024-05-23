@@ -3,8 +3,81 @@ from numpy import array, zeros, shape, where, log10
 from tqdm import tqdm
 
 class GapFill:
+    
+    def GapFill(self, features_df):
 
-    def GapFill(results):
+        features_df['gapfill'] = False
+        features_df['gapfill flag'] = False
+
+        print('running gapfil...')        
+        pbar = tqdm(range(len(features_df)))
+
+        for ix in pbar:
+            row = features_df.iloc[ix,:]
+            resolution = row['Resolving Power'] 
+            mass = row['Calibrated m/z']
+            time = row['Time']
+
+            mrange = [mass*(1-2/resolution), mass*(1+2/resolution)]
+
+            matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
+
+            if(len(matches.index) > 1):
+
+                features_df.iloc[ix]['gapfill'] = True
+
+                features_df.iloc[ix][features_df.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
+
+                if features_df.iloc[ix]['Confidence Score'] < max(matches['Confidence Score']):
+                    
+                    features_df.iloc[ix]['gapfill flag'] = True
+
+        return features_df
+    
+
+    def GapFill_experimental(self, features_ddf):
+        
+        features_ddf['gapfill'] = False
+        features_ddf['gapfill flag'] = False
+        intensity_cols = [m for m in features_ddf.columns if '.raw' in m]
+
+        def gapfill(row):
+
+            resolution =  row['Resolving Power'] 
+            mass = row['Calibrated m/z']
+            time = row['Time']
+
+            mrange = [mass*(1-2/resolution), mass*(1+2/resolution)]
+
+            matches = features_ddf[(features_ddf['Calibrated m/z'] > mrange[0]) & (features_ddf['Calibrated m/z'] < mrange[1]) & (features_ddf['Time'] == time)]
+
+            matches_len = 0
+            cs_max = 0
+            for part in matches.to_delayed():
+                part_len = len(part.compute().index)
+                #part_cs = max(part.compute()['Confidence Score'])
+                matches_len = matches_len + part_len
+                ##if part_cs > cs_max:
+                  #  cs_max = part_cs
+            if(matches_len > 1):
+
+                row['gapfill'] = True
+                
+                row[intensity_cols] = max(row[intensity_cols])
+                
+                if row['Confidence Score'] < max(matches['Confidence Score']):
+                    
+                    row['gapfill flag'] = True
+            
+            return row    
+        
+        features_ddf_2 = features_ddf.apply(lambda x: gapfill( x,), axis = 1)
+
+        return features_ddf_2
+    
+
+
+    def GapFill_experimental_2(results):
 
         print('performing gap fill')
 
