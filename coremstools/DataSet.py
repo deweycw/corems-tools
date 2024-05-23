@@ -34,6 +34,7 @@ class DataSet(Features):
 
         self.time_interval = Settings.time_interval
         self.feature_list = None
+        self.feature_list_df = None
 
         if (self.sample_list == None) & (self.path_to_sample_list != None):
             
@@ -50,7 +51,7 @@ class DataSet(Features):
 
     def _initialize_from_sample_list_file(self):
 
-        self.sample_list = read_csv(self.path_to_sample_list)
+        self.sample_list = read_csv(self.path_to_sample_list, index_col = None)
 
 
     def run_internal_std_qc(self):
@@ -134,6 +135,12 @@ class DataSet(Features):
 
         if self.feature_list == None:
             self.feature_list = Features(self.sample_list)
+            try:
+                if len(self.feature_list_df.columns) > 0:
+                    self.feature_list.feature_list_ddf = self.feature_list_df
+            except:
+                pass
+        
 
     def run_alignment(self):
         """
@@ -171,7 +178,7 @@ class DataSet(Features):
         Method to export feature list as .csv file. Will be exported to the directory defined in Parameters.Settings.assignments_directory.
         '''
         self._check_for_feature_list()
-        self.feature_list.export()
+        self.feature_list.export_csv()
         
 
 

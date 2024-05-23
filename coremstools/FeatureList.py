@@ -1,4 +1,6 @@
 from pandas import DataFrame
+import dask.dataframe as dd
+
 from coremstools.Align import Align
 from coremstools.GapFill import GapFill 
 from coremstools.Parameters import Settings
@@ -27,20 +29,27 @@ class Features:
     """
     def __init__(self, sample_list):
         
-        self.feature_list_df: DataFrame = None
+        self.feature_list_ddf = None
         self.sample_list = sample_list
 
-    def run_alignment(self):
+    def run_alignment(self,experimental = False):
+        
+        if experimental:
+        
+            self.feature_list_ddf = Align.Align_exp(self, self.sample_list)
 
-        self.feature_list_df = Align.Align(self, self.sample_list)
+        else:
+
+            self.feature_list_ddf = Align.Align(self, self.sample_list)
+
 
     def run_gapfill(self):
 
-        if self.feature_list_df is not None:
-            self.feature_list_df = GapFill.GapFill(self.feature_list_df)
+        if self.feature_list_ddf is not None:
+            self.feature_list_ddf = GapFill.GapFill(self, self.feature_list_ddf)
         else:
             self.run_alignment()
-            self.feature_list_df = GapFill.GapFill(self.feature_list_df)
+            self.feature_list_ddf = GapFill.GapFill(self, self.feature_list_ddf)
         
     def flag_errors(self):
 
@@ -82,6 +91,20 @@ class Features:
         #self.feature_list_df.to_csv(Settings.assignments_directory + 'feature_list_df.csv')
 
 
-    def export(self):
+    def export_csv(self):
 
-        self.feature_list_df.to_csv(Settings.assignments_directory + 'feature_list_df.csv', index=False)
+        print('writing to .csv...')
+        #dir = '/home/christiandewey/Dropbox/'
+        dir = Settings.assignments_directory
+        self.feature_list_ddf.to_csv(dir + 'feature_list.csv',index = False) #, single_file = True, header_first_partition_only = True)
+        
+        #self.feature_list_ddf.to_csv(Settings.assignments_directory + 'feature_list-leg.csv',index = False)
+
+    def export_parquet(self):
+
+        print('writing to .parquet...')
+        dir = '/home/christiandewey/Dropbox/'
+        #dir = Settings.assignments_directory
+        self.feature_list_ddf.to_parquet(dir + 'feature_list.parquet', compute =True)
+        
+        #self.feature_list_ddf.to_csv(Settings.assignments_directory + 'feature_list-leg.csv',index = False)
