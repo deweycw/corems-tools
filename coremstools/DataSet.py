@@ -191,12 +191,12 @@ class DataSet(Features):
         self.feature_list.flag_blank_features()
 
 
-    def export_feature_list(self):
+    def export_feature_list(self, fname = 'feature_list.csv'):
         '''
         Method to export feature list as .csv file. Will be exported to the directory defined in Parameters.Settings.assignments_directory.
         '''
         self._check_for_feature_list()
-        self.feature_list.export_csv()
+        self.feature_list.export_csv(fname)
         
 
 

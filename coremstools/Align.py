@@ -142,7 +142,7 @@ class Align:
         
         final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols]
 
-        final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')]
+        final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + cols_at_end
         
         results_df = results_df[final_col_list]
         
