@@ -6,8 +6,8 @@ class GapFill:
     
     def GapFill(self, features_df):
         
-        features_df['gapfill'] = False
-        features_df['gapfill flag'] = False
+        features_df['gapfill'] = 0
+        features_df['gapfill flag'] = 0
 
         print('running gapfil...')        
         pbar = tqdm(range(len(features_df.index)))
@@ -23,13 +23,12 @@ class GapFill:
             matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
 
             if(len(matches.index) > 1):
-                features_df.iloc[ix].loc['gapfill'] = True
+                features_df['gapfill'].iloc[ix] = 1
 
                 features_df.iloc[ix][features_df.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
 
                 if features_df.iloc[ix]['Confidence Score'] < max(matches['Confidence Score']):
-                    features_df.iloc[ix].loc['gapfill flag'] = True
-
+                    features_df['gapfill flag'].iloc[ix] = 1
         return features_df
     
 

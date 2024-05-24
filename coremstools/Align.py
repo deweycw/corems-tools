@@ -41,7 +41,11 @@ class Align:
         
 
         assignments_dir = Settings.assignments_directory
-        disp_addend = Settings.dispersity_addend
+
+        if include_dispersity == True:
+            disp_addend = Settings.dispersity_addend
+        else:
+            disp_addend = Settings.csvfile_addend
 
         shared_columns = ['Time', 'Molecular Formula',  'Calculated m/z', 'DBE']
 

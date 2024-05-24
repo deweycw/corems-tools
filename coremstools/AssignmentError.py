@@ -1,4 +1,4 @@
-from pandas import DataFrame
+from pandas import DataFrame, concat
 from seaborn import scatterplot, kdeplot
 import matplotlib.pyplot as plt
 import coremstools.AssignmentCalcs as calcs
@@ -24,6 +24,8 @@ class AssignmentError:
             
         plot_data = assignments.copy()
 
+        plot_data = plot_data[plot_data['Molecular Class'] != 'Unassigned']
+
         if n_molclass > 0:
             from itertools import islice
             temp_dict = {mc: len(plot_data[plot_data['Molecular Class'] == mc]) for mc in plot_data['Molecular Class'].unique() if mc != 'Unassigned'}
@@ -37,14 +39,12 @@ class AssignmentError:
 
             first_n_mcs = take(n_molclass,molclass_num.keys())
 
-            #def top_n_only(mc):
-            #    if mc not in first_n_mcs:
-            #        mc = 'Other'
-            #    return mc
-
             #plot_data['Molecular Class'] = plot_data['Molecular Class'].transform(top_four_only)
-        
-            plot_data = plot_data[plot_data['Molecular Class'].isin(first_n_mcs)]
+            others = plot_data[~plot_data['Molecular Class'].isin(first_n_mcs)]
+            others['Molecular Class'] = 'Other' 
+            subs = plot_data[plot_data['Molecular Class'].isin(first_n_mcs)]
+            plot_data = concat([subs,others])
+            #plot_data = plot_data[plot_data['Molecular Class'].isin(first_n_mcs)]
 
         scatterplot(x='m/z', y='m/z Error (ppm)', hue='Molecular Class', s = 3, data=plot_data, ax=ax1, edgecolor='none')
         ax1.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,frameon=False)

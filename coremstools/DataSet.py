@@ -60,7 +60,6 @@ class DataSet(Features):
 
         for f in self.sample_list['File']:
             df = read_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + '.csv'))
-            df.to_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + 'backup.csv'))
             df = lcmsfns.add_mol_class(df)
             df.to_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + '.csv'))
 
