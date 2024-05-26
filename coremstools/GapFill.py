@@ -25,7 +25,7 @@ class GapFill:
             if(len(matches.index) > 1):
                 features_df['gapfill'].iloc[ix] = 1
 
-                features_df.iloc[ix][features_df.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
+                features_df[features_df.filter(regex='Intensity').columns].iloc[ix] = matches.filter(regex='Intensity').sum(axis=0)
 
                 if features_df.iloc[ix]['Confidence Score'] < max(matches['Confidence Score']):
                     features_df['gapfill flag'].iloc[ix] = 1
