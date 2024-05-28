@@ -64,6 +64,8 @@ class Align:
                     'Calibrated m/z',
                     'Resolving Power',
                     'Confidence Score',
+                    'm/z Error Score',
+                    'Isotopologue Similarity',
                     'S/N']
 
         print('running alignment on ...')
