@@ -29,10 +29,10 @@ class Features:
     """
     def __init__(self, sample_list):
         
-        self.feature_list_ddf = None
+        #self.feature_list_ddf = None
         self.sample_list = sample_list
 
-    def run_alignment(self,include_dispersity, experimental):
+    def run_alignment(self, include_dispersity, experimental):
         
         if experimental:
         

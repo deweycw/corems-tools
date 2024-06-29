@@ -47,13 +47,15 @@ class Align:
         else:
             disp_addend = Settings.csvfile_addend
 
-        shared_columns = ['Time', 'Molecular Formula',  'Calculated m/z', 'DBE']
+        shared_columns = ['Time','Retention Time', 'Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class', 'H/C', 'O/C']
 
         averaged_cols = ['m/z',
                     'm/z Error (ppm)',
                     'Calibrated m/z',
                     'Resolving Power',
                     'Confidence Score',
+                    'm/z Error Score',
+                    'Isotopologue Similarity',
                     'S/N',
                     'Dispersity']
         
@@ -142,7 +144,7 @@ class Align:
         results_df = pd.DataFrame(masterresults).fillna(0)
         cols_at_end = [c for c in results_df.columns if 'Intensity' in c ]
         
-        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols]
+        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] + ['N Samples']
 
         final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + cols_at_end
         
@@ -267,7 +269,7 @@ class Align:
         joined2 = feature_groups.join(n_samples.to_frame(name='N Samples'))
         joined3 = joined2.groupby(joined2.index).first() #  [last(joined2.index.drop_duplicates())]
 
-        final_col_list = [ f + '_mean' for f in averaged_cols] + [ f + '_sd' for f in averaged_cols]
+        final_col_list = [ f + '_mean' for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] + ['N Samples']
         final_col_list = shared_columns + final_col_list
         final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + flist
         return joined3[final_col_list]
