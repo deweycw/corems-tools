@@ -6,3 +6,4 @@ env/
 *cpython*
 .raw
 testdata/
+*.DS_Store*
