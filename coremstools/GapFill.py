@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 class GapFill:
     
-    def GapFill(self, features_df):
+    def GapFill(self, gapfill_variable, features_df):
         
         features_df['gapfill'] = 0
         features_df['gapfill flag'] = 0
@@ -22,7 +22,7 @@ class GapFill:
             row = features_df.iloc[ix]
 
             if row['gapfill id'] == 0:
-                #print(ix)
+                
                 resolution = row['Resolving Power'] 
                 mass = row['Calibrated m/z']
                 time = row['Time']
@@ -33,28 +33,17 @@ class GapFill:
                 
                 if(len(matches.index) > 1):
                     
-                    #features_df['gapfill'].iloc[ix] = 1
                     features_df.loc[matches.index,'gapfill'] = 1
-                
                     features_df.loc[matches.index, 'gapfill id'] = gf_id
-                    #matches['gapfill id'] = gf_id
                     gf_id = gf_id + 1
 
-                    #features_df[features_df.filter(regex='Intensity').columns].iloc[ix] = matches.filter(regex='Intensity').sum(axis=0)
                     matches_sum = matches.filter(regex='Intensity').sum(axis=0)
 
-                    #features_df[intensity_cols].iloc[ix] = matches_sum
                     features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
-                    sub = matches.loc[matches['Confidence Score'] < max(matches['Confidence Score']), 'gapfill flag']
+                    sub = matches.loc[matches[gapfill_variable] < max(matches[gapfill_variable]), 'gapfill flag']
                     features_df.loc[sub.index, 'gapfill flag'] = 1
-                    #matches[intensity_cols] = matches_sum
-                    #if features_df['Confidence Score'].iloc[ix] < max(matches['Confidence Score']):
-                        #features_df['gapfill flag'].iloc[ix] = 1
-                    
-
-                #holder.append(matches)
         
-        return features_df #concat(holder, ignore_index=True)
+        return features_df 
     
 
     def gapfill_legacy(self, featurelist):
@@ -69,7 +58,7 @@ class GapFill:
             if(len(matches)>1):
                 featurelist.loc[i,'gapfill']=True
                 featurelist.loc[i,featurelist.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
-                if featurelist.loc[i,'Confidence Score']<max(matches['Confidence Score']):
+                if featurelist.loc[i,gapfill_variable]<max(matches[gapfill_variable]):
                     featurelist.loc[i,'gapfill flag']=True
         return(featurelist)    
 
@@ -93,7 +82,7 @@ class GapFill:
             cs_max = 0
             for part in matches.to_delayed():
                 part_len = len(part.compute().index)
-                #part_cs = max(part.compute()['Confidence Score'])
+                #part_cs = max(part.compute()[gapfill_variable])
                 matches_len = matches_len + part_len
                 ##if part_cs > cs_max:
                   #  cs_max = part_cs
@@ -103,7 +92,7 @@ class GapFill:
                 
                 row[intensity_cols] = max(row[intensity_cols])
                 
-                if row['Confidence Score'] < max(matches['Confidence Score']):
+                if row[gapfill_variable] < max(matches[gapfill_variable]):
                     
                     row['gapfill flag'] = True
             
@@ -232,13 +221,13 @@ class GapFill:
 
                 id_df[intensity_cols] = id_intensity_sum
 
-                id_max_confidence_score = max(id_df['Confidence Score'])
+                id_max_confidence_score = max(id_df[gapfill_variable])
 
-                id_df.loc[id_df['Confidence Score'] < id_max_confidence_score,'Gapfill Flag'] = True
+                id_df.loc[id_df[gapfill_variable] < id_max_confidence_score,'Gapfill Flag'] = True
 
-                gapfilled_mf = id_df.loc[id_df['Confidence Score'] == id_max_confidence_score,'Molecular Formula']
+                gapfilled_mf = id_df.loc[id_df[gapfill_variable] == id_max_confidence_score,'Molecular Formula']
 
-                id_df.loc[id_df['Confidence Score'] < id_max_confidence_score,'Gapfill Molecular Formula'] = gapfilled_mf.iloc[0]
+                id_df.loc[id_df[gapfill_variable] < id_max_confidence_score,'Gapfill Molecular Formula'] = gapfilled_mf.iloc[0]
 
                 time_step_df[time_step_df['Gapfill ID'] == id] = id_df
 
