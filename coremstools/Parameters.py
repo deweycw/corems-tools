@@ -24,7 +24,7 @@ class Settings:
     csvfile_addend : str
         Textual difference between the name of the Thermo .raw file and the .csv file containing the unprocessed CoreMS assignments. If the .raw file is named SAMPLE.raw, then the assignments file is assumed to be named 'SAMPLE' + csvfile_addend + '.csv'. Defaults to '_assignments'. 
     dispersity_addend : str
-        Textual difference between the name of the Thermo .raw file and the .csv file with the processed CoreMS assignments AND dispersity calculation. Defaults to _dispersity'
+        Textual difference between the name of the Thermo .raw file and the .csv file with the processed CoreMS assignments AND dispersity calculation.'
     """
 
     raw_file_directory: str = ''
@@ -33,7 +33,7 @@ class Settings:
     internal_std_mz: float = 678.2915 # defaults to mass of [cyanocobalamin]2+
     sample_list: str = '' # 
     csvfile_addend = ''
-    dispersity_addend = ''
+    dispersity_addend = csvfile_addend
     time_interval = 2
     std_time_range = [0,20]
     blank_sample_name = ''

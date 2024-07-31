@@ -47,7 +47,7 @@ class Align:
         else:
             disp_addend = Settings.csvfile_addend
 
-        shared_columns = ['Time','Retention Time', 'Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class', 'H/C', 'O/C']
+        shared_columns = ['Time','Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class', 'H/C', 'O/C']
 
         averaged_cols = ['m/z',
                     'm/z Error (ppm)',
@@ -57,7 +57,8 @@ class Align:
                     'm/z Error Score',
                     'Isotopologue Similarity',
                     'S/N',
-                    'Dispersity']
+                    'Dispersity',
+                    'Retention Time']
         
         if include_dispersity is False:
 

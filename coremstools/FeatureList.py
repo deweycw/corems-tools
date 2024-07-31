@@ -45,8 +45,13 @@ class Features:
 
     def run_gapfill(self, include_dispersity, experimental):
 
-        if self.feature_list_ddf is not None:
-            self.feature_list_ddf = GapFill.GapFill(self, self.feature_list_ddf)
+        if self.feature_list_ddf is not None:         
+            if experimental:
+                self.feature_list_ddf = GapFill.GapFill_experimental_2(self, self.feature_list_ddf)
+            else:
+                self.feature_list_ddf = GapFill.GapFill(self, self.feature_list_ddf)
+
+
         else:
             self.run_alignment(include_dispersity, experimental)
             self.feature_list_ddf = GapFill.GapFill(self, self.feature_list_ddf)

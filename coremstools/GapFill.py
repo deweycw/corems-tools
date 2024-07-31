@@ -8,29 +8,70 @@ class GapFill:
         
         features_df['gapfill'] = 0
         features_df['gapfill flag'] = 0
+        features_df['gapfill id'] = 0
+
+        intensity_cols = list(features_df.filter(regex='Intensity').columns)
 
         print('running gapfil...')        
         pbar = tqdm(range(len(features_df.index)))
+        
+        gf_id = 1
 
         for ix in pbar:
+        
             row = features_df.iloc[ix]
-            resolution = row['Resolving Power'] 
-            mass = row['Calibrated m/z']
-            time = row['Time']
 
-            mrange = [mass*(1-2/resolution), mass*(1+2/resolution)]
+            if row['gapfill id'] == 0:
+                #print(ix)
+                resolution = row['Resolving Power'] 
+                mass = row['Calibrated m/z']
+                time = row['Time']
 
-            matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
+                mrange = [mass*(1-2/resolution), mass*(1+2/resolution)]
 
-            if(len(matches.index) > 1):
-                features_df['gapfill'].iloc[ix] = 1
+                matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
+                
+                if(len(matches.index) > 1):
+                    
+                    #features_df['gapfill'].iloc[ix] = 1
+                    features_df.loc[matches.index,'gapfill'] = 1
+                
+                    features_df.loc[matches.index, 'gapfill id'] = gf_id
+                    #matches['gapfill id'] = gf_id
+                    gf_id = gf_id + 1
 
-                features_df.iloc[ix][features_df.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
+                    #features_df[features_df.filter(regex='Intensity').columns].iloc[ix] = matches.filter(regex='Intensity').sum(axis=0)
+                    matches_sum = matches.filter(regex='Intensity').sum(axis=0)
 
-                if features_df.iloc[ix]['Confidence Score'] < max(matches['Confidence Score']):
-                    features_df['gapfill flag'].iloc[ix] = 1
-        return features_df
+                    #features_df[intensity_cols].iloc[ix] = matches_sum
+                    features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
+                    sub = matches.loc[matches['Confidence Score'] < max(matches['Confidence Score']), 'gapfill flag']
+                    features_df.loc[sub.index, 'gapfill flag'] = 1
+                    #matches[intensity_cols] = matches_sum
+                    #if features_df['Confidence Score'].iloc[ix] < max(matches['Confidence Score']):
+                        #features_df['gapfill flag'].iloc[ix] = 1
+                    
+
+                #holder.append(matches)
+        
+        return features_df #concat(holder, ignore_index=True)
     
+
+    def gapfill_legacy(self, featurelist):
+        featurelist['gapfill']=False
+        featurelist['gapfill flag']=False
+        for i, row in featurelist.iterrows():
+            resolution=row['Resolving Power']
+            mass=row['Calibrated m/z']
+            time=row['Time']
+            mrange=[mass*(1-2/resolution),mass*(1+2/resolution)]
+            matches=featurelist[(featurelist['Calibrated m/z']>mrange[0])&(featurelist['Calibrated m/z']<mrange[1])&(featurelist['Time']==time)]
+            if(len(matches)>1):
+                featurelist.loc[i,'gapfill']=True
+                featurelist.loc[i,featurelist.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
+                if featurelist.loc[i,'Confidence Score']<max(matches['Confidence Score']):
+                    featurelist.loc[i,'gapfill flag']=True
+        return(featurelist)    
 
     def GapFill_experimental(self, features_ddf):
         
@@ -74,7 +115,7 @@ class GapFill:
     
 
 
-    def GapFill_experimental_2(results):
+    def GapFill_experimental_2(self, results):
 
         print('performing gap fill')
 
@@ -179,7 +220,7 @@ class GapFill:
             gap_ids_list = [id for id in unique(time_step_df['Gapfill ID']) if id > 0]
 
 
-            pbar = tqdm(gap_ids_list, ncols=100)
+            pbar = tqdm(gap_ids_list)
             
             for id in pbar:
 
