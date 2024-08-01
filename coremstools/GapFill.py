@@ -40,7 +40,10 @@ class GapFill:
                     matches_sum = matches.filter(regex='Intensity').sum(axis=0)
 
                     features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
-                    sub = matches.loc[matches[gapfill_variable] < max(matches[gapfill_variable]), 'gapfill flag']
+                    if gapfill_variable == 'm/z Error (ppm)':
+                        sub = matches.loc[abs(matches[gapfill_variable]) > abs(min(matches[gapfill_variable])), 'gapfill flag']
+                    else:
+                        sub = matches.loc[matches[gapfill_variable] < max(matches[gapfill_variable]), 'gapfill flag']
                     features_df.loc[sub.index, 'gapfill flag'] = 1
         
         return features_df 
