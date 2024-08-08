@@ -97,22 +97,50 @@ class Features:
 
     def stoichiometric_classification(self):
 
-        self.feature_list_ddf['Stoichiometric classification']='Unclassified'
+        print('Determining stoichiometric classifications...')
 
-        # Calculate atomic stoichiometries
-        if not 'N' in self.feature_list_ddf.columns:
-            self.feature_list_ddf['N']=0
-        if not 'P' in self.feature_list_ddf.columns:
-            self.feature_list_ddf['P']=0
-        if not 'S' in self.feature_list_ddf.columns:
-            self.feature_list_ddf['S']=0
+        '''count = True
+        elements = []
+        for c in self.feature_list_ddf.columns:
+            if count:
+                if c == 'N Samples':
+                    count = False
+                continue
+            else:
+                if 'Intensity' in c:
+                    count = False
+                    continue
+                else:
+                    elements.append(c)
+'''
+
+        self.feature_list_ddf['Stoichiometric classification']='Unclassified'
 
         self.feature_list_ddf['O/C']=self.feature_list_ddf['O']/self.feature_list_ddf['C']
         self.feature_list_ddf['H/C']=self.feature_list_ddf['H']/self.feature_list_ddf['C']
+        # Calculate atomic stoichiometries
+        contains_N = True
+        contains_P = True
+        cols_to_remove = []
+        if not 'N' in self.feature_list_ddf.columns:
+            self.feature_list_ddf['N']=0
+            cols_to_remove = cols_to_remove + ['N','N/C']
+            contains_N = False
+        if not 'P' in self.feature_list_ddf.columns:
+            self.feature_list_ddf['P']=0
+            cols_to_remove = cols_to_remove + ['P', 'P/C']
+            contains_P = False
+        if not 'S' in self.feature_list_ddf.columns:
+            self.feature_list_ddf['S']=0
+            cols_to_remove.append('S')
+
+        if (not contains_N) or (not contains_P):
+            cols_to_remove.append('N/P')
+        
+
         self.feature_list_ddf['N/C']=self.feature_list_ddf['N']/self.feature_list_ddf['C']
         self.feature_list_ddf['P/C']=self.feature_list_ddf['P']/self.feature_list_ddf['C']
         self.feature_list_ddf['N/P']=self.feature_list_ddf['N']/self.feature_list_ddf['P']
-
 
         self.feature_list_ddf['NOSC'] =  4 -(4*self.feature_list_ddf['C'] 
                                 + self.feature_list_ddf['H'] 
@@ -191,7 +219,8 @@ class Features:
                             ,'Stoichiometric classification'] = 'Protein'
 
         self.feature_list_ddf.loc[(self.feature_list_ddf['Is Isotopologue']>0),'Stoichiometric classification']='Isotoplogue'
-
+        for col in cols_to_remove:
+            self.feature_list_ddf.drop(col, axis = 1, inplace=True)
 
     def export_csv(self, fname):
 

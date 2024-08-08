@@ -76,6 +76,7 @@ class Align:
         elements=[]
 
         masterresults = build_masterresults_dict(shared_columns, averaged_cols)
+        used_elements = []
 
         for file in sample_list['File']:
 
@@ -115,6 +116,7 @@ class Align:
                         if element not in elements:
 
                             elements.append(element)
+                            used_elements.append(element)
 
                             masterresults[element]={}
 
@@ -132,7 +134,7 @@ class Align:
                     for c in averaged_cols:
                         
                         masterresults[c][row.feature].append(row[c])
-                
+
         print('  writing N Samples column')
 
         pbar = tqdm(masterresults['m/z'].keys())
@@ -148,9 +150,9 @@ class Align:
         results_df = pd.DataFrame(masterresults).fillna(0)
         cols_at_end = [c for c in results_df.columns if 'Intensity' in c ]
         
-        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] + ['N Samples']
+        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] 
 
-        final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + cols_at_end
+        final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + used_elements + ['N Samples'] + cols_at_end
         
         results_df = results_df[final_col_list]
         
