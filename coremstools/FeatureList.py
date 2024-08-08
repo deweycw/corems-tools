@@ -99,21 +99,6 @@ class Features:
 
         print('Determining stoichiometric classifications...')
 
-        '''count = True
-        elements = []
-        for c in self.feature_list_ddf.columns:
-            if count:
-                if c == 'N Samples':
-                    count = False
-                continue
-            else:
-                if 'Intensity' in c:
-                    count = False
-                    continue
-                else:
-                    elements.append(c)
-'''
-
         self.feature_list_ddf['Stoichiometric classification']='Unclassified'
 
         self.feature_list_ddf['O/C']=self.feature_list_ddf['O']/self.feature_list_ddf['C']
