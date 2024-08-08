@@ -47,7 +47,7 @@ class Align:
         else:
             disp_addend = Settings.csvfile_addend
 
-        shared_columns = ['Time','Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class', 'H/C', 'O/C']
+        shared_columns = ['Time','Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class']
 
         averaged_cols = ['m/z',
                     'm/z Error (ppm)',
@@ -90,6 +90,9 @@ class Align:
             results['feature'] = list(zip(results['Time'],results['Molecular Formula']))
             
             file_name = file.replace('.csv','').split('/')[-1]
+
+            if Settings.dispersity_addend in file_name:
+                file_name.replace(Settings.dispersity_addend, '')
 
             masterresults['Intensity: '+file_name]={}
             

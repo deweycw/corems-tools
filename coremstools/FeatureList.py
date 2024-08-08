@@ -95,6 +95,104 @@ class Features:
         self.feature_list_ddf['blank'] = self.feature_list_ddf[blank_sample_col].fillna(0) / self.feature_list_ddf['Max Intensity']
 
 
+    def stoichiometric_classification(self):
+
+        self.feature_list_ddf['Stoichiometric classification']='Unclassified'
+
+        # Calculate atomic stoichiometries
+        if not 'N' in self.feature_list_ddf.columns:
+            self.feature_list_ddf['N']=0
+        if not 'P' in self.feature_list_ddf.columns:
+            self.feature_list_ddf['P']=0
+        if not 'S' in self.feature_list_ddf.columns:
+            self.feature_list_ddf['S']=0
+
+        self.feature_list_ddf['O/C']=self.feature_list_ddf['O']/self.feature_list_ddf['C']
+        self.feature_list_ddf['H/C']=self.feature_list_ddf['H']/self.feature_list_ddf['C']
+        self.feature_list_ddf['N/C']=self.feature_list_ddf['N']/self.feature_list_ddf['C']
+        self.feature_list_ddf['P/C']=self.feature_list_ddf['P']/self.feature_list_ddf['C']
+        self.feature_list_ddf['N/P']=self.feature_list_ddf['N']/self.feature_list_ddf['P']
+
+
+        self.feature_list_ddf['NOSC'] =  4 -(4*self.feature_list_ddf['C'] 
+                                + self.feature_list_ddf['H'] 
+                                - 3*self.feature_list_ddf['N'] 
+                                - 2*self.feature_list_ddf['O'])/self.feature_list_ddf['C']
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']<=0.6) & 
+                            (self.feature_list_ddf['H/C']>=1.32) & 
+                            (self.feature_list_ddf['N/C']<=0.126) &
+                            (self.feature_list_ddf['P/C']<0.35)
+                            ,'Stoichiometric classification'] = 'Lipid'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']<=0.6) & 
+                            (self.feature_list_ddf['H/C']>=1.32) & 
+                            (self.feature_list_ddf['N/C']<=0.126) &
+                            (self.feature_list_ddf['P/C']<0.35) &
+                            (self.feature_list_ddf['P']>0)
+                            ,'Stoichiometric classification'] = 'Phospholipid'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']>=0.61) & 
+                            (self.feature_list_ddf['H/C']>=1.45) & 
+                            (self.feature_list_ddf['N/C']>0.07) & 
+                            (self.feature_list_ddf['N/C']<=0.2) & 
+                            (self.feature_list_ddf['P/C']<0.3) & 
+                            (self.feature_list_ddf['O']>=3) &
+                            (self.feature_list_ddf['N']>=1)
+                            ,'Stoichiometric classification'] = 'A-Sugars'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']>=0.8) & 
+                            (self.feature_list_ddf['H/C']>=1.65) & 
+                            (self.feature_list_ddf['H/C']<2.7) &
+                            (self.feature_list_ddf['O']>=3) &
+                            (self.feature_list_ddf['N']==0)
+                            ,'Stoichiometric classification'] = 'Carbohydrates'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']>=0.5) & 
+                            (self.feature_list_ddf['O/C']<1.7) & 
+                            (self.feature_list_ddf['H/C']>1) & 
+                            (self.feature_list_ddf['H/C']<1.8) &
+                            (self.feature_list_ddf['N/C']>=0.2) & 
+                            (self.feature_list_ddf['N/C']<=0.5) & 
+                            (self.feature_list_ddf['N']>=2) &
+                            (self.feature_list_ddf['P']>=1) &
+                            (self.feature_list_ddf['S']==0) &
+                            (self.feature_list_ddf['Calculated m/z']>305) &
+                            (self.feature_list_ddf['Calculated m/z']<523)
+                            ,'Stoichiometric classification'] = 'Nucleotides'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']<=1.15) & 
+                            (self.feature_list_ddf['H/C']<1.32) & 
+                            (self.feature_list_ddf['N/C']<0.126) &
+                            (self.feature_list_ddf['P/C']<=0.2) 
+                            ,'Stoichiometric classification'] = 'Phytochemicals'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['S']>0)
+                            ,'Stoichiometric classification'] = 'Organosulfur'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']>0.12) & 
+                            (self.feature_list_ddf['O/C']<=0.6) & 
+                            (self.feature_list_ddf['H/C']>0.9) & 
+                            (self.feature_list_ddf['H/C']<2.5) & 
+                            (self.feature_list_ddf['N/C']>=0.126) & 
+                            (self.feature_list_ddf['N/C']<=0.7) & 
+                            (self.feature_list_ddf['P/C']<0.17) & 
+                            (self.feature_list_ddf['N']>=1)
+                            ,'Stoichiometric classification'] = 'Protein'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['O/C']>0.6) & 
+                            (self.feature_list_ddf['O/C']<=1) & 
+                            (self.feature_list_ddf['H/C']>1.2) & 
+                            (self.feature_list_ddf['H/C']<2.5) & 
+                            (self.feature_list_ddf['N/C']>=0.2) & 
+                            (self.feature_list_ddf['N/C']<=0.7) & 
+                            (self.feature_list_ddf['P/C']<0.17) & 
+                            (self.feature_list_ddf['N']>=1)
+                            ,'Stoichiometric classification'] = 'Protein'
+
+        self.feature_list_ddf.loc[(self.feature_list_ddf['Is Isotopologue']>0),'Stoichiometric classification']='Isotoplogue'
+
+
     def export_csv(self, fname):
 
         print('writing to .csv...')
