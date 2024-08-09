@@ -50,6 +50,57 @@ class GapFill:
         
         return features_df 
     
+    def GapFill_experimental_3(self, gapfill_variable, features_df):
+        
+        features_df['gapfill'] = 0
+        features_df['gapfill flag'] = 0
+        features_df['gapfill id'] = 0
+
+        intensity_cols = list(features_df.filter(regex='Intensity').columns)
+
+        print('running gapfil...')                
+        gf_id = 1
+
+        features_df['low m/z range'] = features_df['Calibrated m/z'] * (1-2/(features_df['Resolving Power']))
+        features_df['high m/z range'] = features_df['Calibrated m/z'] * (1+2/(features_df['Resolving Power']))
+
+        range_df = features_df.loc[['low m/z range', 'high m/z range', 'Calibrated m/z','Time', 'gapfill id']]
+        
+
+
+        for ix in pbar:
+        
+            row = features_df.iloc[ix]
+
+            if row['gapfill id'] == 0:
+                
+                resolution = row['Resolving Power'] 
+                mass = row['Calibrated m/z']
+                time = row['Time']
+
+                mrange = [mass*(1-2/resolution), mass*(1+2/resolution)]
+
+                matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
+                
+                if(len(matches.index) > 1):
+                    
+                    features_df.loc[matches.index,'gapfill'] = 1
+                    features_df.loc[matches.index, 'gapfill id'] = gf_id
+                    gf_id = gf_id + 1
+
+                    matches_sum = matches.filter(regex='Intensity').sum(axis=0)
+
+                    features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
+                    if gapfill_variable == 'm/z Error (ppm)':
+                        sub = matches.loc[abs(matches[gapfill_variable]) > min(abs(matches[gapfill_variable])), 'gapfill flag']
+                    elif gapfill_variable == 'mz error flag':
+                        sub = matches.loc[matches[gapfill_variable] > min(matches[gapfill_variable]), 'gapfill flag']
+                    else:
+                        sub = matches.loc[matches[gapfill_variable] < max(matches[gapfill_variable]), 'gapfill flag']
+                    features_df.loc[sub.index, 'gapfill flag'] = 1
+        
+        return features_df 
+    
 
     def gapfill_legacy(self, featurelist):
         featurelist['gapfill']=False
