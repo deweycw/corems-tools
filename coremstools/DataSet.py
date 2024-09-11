@@ -139,7 +139,7 @@ class DataSet(Features):
         for f in self.sample_list['File']:
             print('  ' + f)
             fcsv = f.split('.')[0] + Settings.csvfile_addend + '.csv'
-            Dispersity.CalculateDispersity(self, Settings.assignments_directory +  fcsv)
+            Dispersity.CalculateDispersity(Settings.assignments_directory +  fcsv)
 
     def _check_for_feature_list(self):
 
