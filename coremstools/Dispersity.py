@@ -8,7 +8,7 @@ from coremstools.Parameters import Settings
 
 from tqdm import tqdm
 
-import memory_profiler
+#import memory_profiler
 
 class Dispersity:
     """
