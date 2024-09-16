@@ -2,9 +2,9 @@ from numpy import mean, std
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
-import dask.dataframe as dd
-from dask.diagnostics import ProgressBar
-ProgressBar().register()
+#import dask.dataframe as dd
+#from dask.diagnostics import ProgressBar
+#ProgressBar().register()
 
 from coremstools.Parameters import Settings
 
@@ -47,15 +47,18 @@ class Align:
         else:
             disp_addend = Settings.csvfile_addend
 
-        shared_columns = ['Time', 'Molecular Formula',  'Calculated m/z', 'DBE']
+        shared_columns = ['Time','Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class']
 
         averaged_cols = ['m/z',
                     'm/z Error (ppm)',
                     'Calibrated m/z',
                     'Resolving Power',
                     'Confidence Score',
+                    'm/z Error Score',
+                    'Isotopologue Similarity',
                     'S/N',
-                    'Dispersity']
+                    'Dispersity',
+                    'Retention Time']
         
         if include_dispersity is False:
 
@@ -64,6 +67,8 @@ class Align:
                     'Calibrated m/z',
                     'Resolving Power',
                     'Confidence Score',
+                    'm/z Error Score',
+                    'Isotopologue Similarity',
                     'S/N']
 
         print('running alignment on ...')
@@ -71,6 +76,7 @@ class Align:
         elements=[]
 
         masterresults = build_masterresults_dict(shared_columns, averaged_cols)
+        used_elements = []
 
         for file in sample_list['File']:
 
@@ -85,6 +91,9 @@ class Align:
             results['feature'] = list(zip(results['Time'],results['Molecular Formula']))
             
             file_name = file.replace('.csv','').split('/')[-1]
+
+            if Settings.dispersity_addend in file_name:
+                file_name.replace(Settings.dispersity_addend, '')
 
             masterresults['Intensity: '+file_name]={}
             
@@ -107,6 +116,7 @@ class Align:
                         if element not in elements:
 
                             elements.append(element)
+                            used_elements.append(element)
 
                             masterresults[element]={}
 
@@ -124,7 +134,7 @@ class Align:
                     for c in averaged_cols:
                         
                         masterresults[c][row.feature].append(row[c])
-                
+
         print('  writing N Samples column')
 
         pbar = tqdm(masterresults['m/z'].keys())
@@ -140,9 +150,9 @@ class Align:
         results_df = pd.DataFrame(masterresults).fillna(0)
         cols_at_end = [c for c in results_df.columns if 'Intensity' in c ]
         
-        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols]
+        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] 
 
-        final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + cols_at_end
+        final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + used_elements + ['N Samples'] + cols_at_end
         
         results_df = results_df[final_col_list]
         
@@ -265,7 +275,7 @@ class Align:
         joined2 = feature_groups.join(n_samples.to_frame(name='N Samples'))
         joined3 = joined2.groupby(joined2.index).first() #  [last(joined2.index.drop_duplicates())]
 
-        final_col_list = [ f + '_mean' for f in averaged_cols] + [ f + '_sd' for f in averaged_cols]
+        final_col_list = [ f + '_mean' for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] + ['N Samples']
         final_col_list = shared_columns + final_col_list
         final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + flist
         return joined3[final_col_list]

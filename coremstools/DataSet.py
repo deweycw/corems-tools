@@ -2,7 +2,7 @@ __author__ = "Christian Dewey & Rene Boiteau"
 __date__ = "2024 May 14"
 __version__ = "0.0.1"
 
-from pandas import DataFrame, read_csv
+from pandas import read_csv
 
 from coremstools.FeatureList import Features
 from coremstools.Parameters import Settings
@@ -34,7 +34,7 @@ class DataSet(Features):
 
         self.time_interval = Settings.time_interval
         self.feature_list = None
-        self.feature_list_df = None
+        self.feature_list_ddf = None
 
         if (self.sample_list == None) & (self.path_to_sample_list != None):
             
@@ -139,15 +139,15 @@ class DataSet(Features):
         for f in self.sample_list['File']:
             print('  ' + f)
             fcsv = f.split('.')[0] + Settings.csvfile_addend + '.csv'
-            Dispersity.CalculateDispersity(self, Settings.assignments_directory +  fcsv)
+            Dispersity.CalculateDispersity(Settings.assignments_directory +  fcsv)
 
     def _check_for_feature_list(self):
 
         if self.feature_list == None:
             self.feature_list = Features(self.sample_list)
             try:
-                if len(self.feature_list_df.columns) > 0:
-                    self.feature_list.feature_list_ddf = self.feature_list_df
+                if len(self.feature_list_ddf.columns) > 0:
+                    self.feature_list.feature_list_ddf = self.feature_list_ddf
             except:
                 pass
         
@@ -169,12 +169,12 @@ class DataSet(Features):
         self.feature_list.run_alignment(include_dispersity, experimental)
 
 
-    def run_gapfill(self, include_dispersity = True, experimental = False):
+    def run_gapfill(self, gapfill_variable = 'Confidence Score', include_dispersity = True, experimental = False):
         '''
         Method to perform gapfilling of features across dataset.
         '''        
         self._check_for_feature_list()
-        self.feature_list.run_gapfill(include_dispersity, experimental)
+        self.feature_list.run_gapfill(gapfill_variable, include_dispersity, experimental)
 
 
     def calc_rolling_error(self):

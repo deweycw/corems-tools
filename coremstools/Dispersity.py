@@ -8,12 +8,14 @@ from coremstools.Parameters import Settings
 
 from tqdm import tqdm
 
+#import memory_profiler
 
 class Dispersity:
     """
     Methods to produce plots of assignment error. 
     """
-    def CalculateDispersity(self, sample):
+    @staticmethod
+    def CalculateDispersity(sample):
         """
         Method to calculate dispersity metric. 
 
