@@ -2,7 +2,7 @@ __author__ = "Christian Dewey & Rene Boiteau"
 __date__ = "2024 May 14"
 __version__ = "0.0.1"
 
-from pandas import DataFrame, read_csv
+from pandas import read_csv
 
 from coremstools.FeatureList import Features
 from coremstools.Parameters import Settings

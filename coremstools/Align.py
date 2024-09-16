@@ -2,9 +2,9 @@ from numpy import mean, std
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
-import dask.dataframe as dd
-from dask.diagnostics import ProgressBar
-ProgressBar().register()
+#import dask.dataframe as dd
+#from dask.diagnostics import ProgressBar
+#ProgressBar().register()
 
 from coremstools.Parameters import Settings
 
