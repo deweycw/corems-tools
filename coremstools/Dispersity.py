@@ -50,7 +50,7 @@ class Dispersity:
                 
             if peak_chroma['EIC'].sum() > 0:
                 d = peak_chroma['time'].std()
-                t = average(peak_chroma['time'], weights=peak_chroma['EIC']) 
+                t = average(peak_chroma['time']) 
 
                 return d, t
             else:
