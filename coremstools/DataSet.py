@@ -59,9 +59,9 @@ class DataSet(Features):
         ''' 
 
         for f in self.sample_list['File']:
-            df = read_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + '.csv'))
+            df = read_csv(Settings.assignments_directory + f.replace('.raw','.csv'))
             df = lcmsfns.add_mol_class(df)
-            df.to_csv(Settings.assignments_directory + f.replace('.raw',Settings.csvfile_addend + '.csv'))
+            df.to_csv(Settings.assignments_directory + f.replace('.raw','.csv'))
 
 
     def run_internal_std_qc(self):
@@ -97,7 +97,7 @@ class DataSet(Features):
         print('\nplotting m/z error plots for ...')   
         for f in self.sample_list['File']:
             print('  '+ f)
-            fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
+            fpath = Settings.assignments_directory + f.split('.')[0] + '.csv'
             save_file = fpath.split('.')[0] + '_mz-error.jpg'
 
             assignments = read_csv(fpath)
@@ -119,7 +119,7 @@ class DataSet(Features):
         print('\nplotting molecular classes v. retention time for ...')   
         for f in self.sample_list['File']:
             print('  '+ f)
-            fpath = Settings.assignments_directory + f.split('.')[0] + Settings.csvfile_addend + '.csv'
+            fpath = Settings.assignments_directory + f.split('.')[0]+ '.csv'
 
             assignments = read_csv(fpath)
 
@@ -131,14 +131,14 @@ class DataSet(Features):
 
     def run_dispersity_calcs(self):
         '''
-        Method to runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + dispersity_addend +'.csv' in the directory defined by Settings.assignments_directory. Currently quite slow. Would be good to do this calculation after the feature list is assembled.
+        Method to runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + '.csv' in the directory defined by Settings.assignments_directory. Currently quite slow. Would be good to do this calculation after the feature list is assembled.
         '''
 
         print('\nrunning dispersity calculation on ...')
 
         for f in self.sample_list['File']:
             print('  ' + f)
-            fcsv = f.split('.')[0] + Settings.csvfile_addend + '.csv'
+            fcsv = f.split('.')[0] + '.csv'
             Dispersity.CalculateDispersity(Settings.assignments_directory +  fcsv)
 
     def _check_for_feature_list(self):

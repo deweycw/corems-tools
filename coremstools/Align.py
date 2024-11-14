@@ -42,11 +42,6 @@ class Align:
 
         assignments_dir = Settings.assignments_directory
 
-        if include_dispersity == True:
-            disp_addend = Settings.dispersity_addend
-        else:
-            disp_addend = Settings.csvfile_addend
-
         shared_columns = ['Time','Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class']
 
         averaged_cols = ['m/z',
@@ -82,7 +77,7 @@ class Align:
 
             print('  ' + file)
 
-            file = assignments_dir + file.split('.')[0] + disp_addend + '.csv'
+            file = assignments_dir + file.split('.')[0] + '.csv'
 
             results = pd.read_csv(file)
             
@@ -91,9 +86,6 @@ class Align:
             results['feature'] = list(zip(results['Time'],results['Molecular Formula']))
             
             file_name = file.replace('.csv','').split('/')[-1]
-
-            if Settings.dispersity_addend in file_name:
-                file_name.replace(Settings.dispersity_addend, '')
 
             masterresults['Intensity: '+file_name]={}
             
@@ -210,7 +202,7 @@ class Align:
 
         assignments_dir = Settings.assignments_directory
         
-        list_sample_csv = [assignments_dir + f.replace('.raw', Settings.dispersity_addend + '.csv') for f in sample_list['File']]
+        list_sample_csv = [assignments_dir + f.replace('.raw', '.csv') for f in sample_list['File']]
         #print('checking columns...')
         ensure_same_columns(list_sample_csv)
         
@@ -226,7 +218,7 @@ class Align:
                          'S/N',
                          'Dispersity']
         
-        glob_str = assignments_dir + '*' + Settings.dispersity_addend + '.csv'
+        glob_str = assignments_dir + '*' +  '.csv'
 
         all_results_read = dd.read_csv(list_sample_csv)
 
