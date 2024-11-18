@@ -169,12 +169,12 @@ class DataSet(Features):
         self.feature_list.run_alignment(include_dispersity, experimental)
 
 
-    def run_gapfill(self, gapfill_variable = 'Confidence Score', include_dispersity = True, experimental = False):
+    def run_consolidation(self, gapfill_variable = 'Confidence Score', include_dispersity = True, experimental = False):
         '''
         Method to perform gapfilling of features across dataset.
         '''        
         self._check_for_feature_list()
-        self.feature_list.run_gapfill(gapfill_variable, include_dispersity, experimental)
+        self.feature_list.run_consolidation(gapfill_variable, include_dispersity, experimental)
 
 
     def calc_rolling_error(self):

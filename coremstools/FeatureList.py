@@ -21,7 +21,7 @@ class Features:
     run_gapfill()
         Runs gapfill. 
     flag_errors()
-        Identifies features with potentially significant mass measurement errors based on rolling average and standard deviation of measured m/z.
+        Identifies features with potentially significant mass measurement errors based on rolling average and standard error of measured m/z.
     flag_blank_features()
         Calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.
     export()
@@ -43,7 +43,7 @@ class Features:
             self.feature_list_df = Align.run(self, self.sample_list, include_dispersity)
 
 
-    def run_gapfill(self, gapfill_variable, include_dispersity, experimental):
+    def run_consolidation(self, gapfill_variable, include_dispersity, experimental):
 
         if self.feature_list_df is not None:         
             if experimental:
