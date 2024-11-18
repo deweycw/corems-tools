@@ -1,14 +1,21 @@
 from pandas import unique, concat
-from numpy import array, zeros, shape, where, log10
+from numpy import array, zeros, shape, where, log10, log, sqrt
 from tqdm import tqdm
 
 class GapFill:
     
-    def GapFill(self, gapfill_variable, features_df):
+    def GapFill(self, gapfill_variable, features_df, consolidation_width = "2sigma"):
         
         features_df['gapfill'] = 0
         features_df['gapfill flag'] = 0
         features_df['gapfill id'] = 0
+
+        if consolidation_width == "2sigma":
+            factor = 1 / (sqrt(2 * log(2)))
+        elif consolidation_width == "1sigma":
+            factor = 1 / (2 * sqrt(2 * log(2)))
+        elif consolidation_width == "fwhm":
+            factor = 1 / 2
 
         intensity_cols = list(features_df.filter(regex='Intensity').columns)
 
@@ -27,7 +34,8 @@ class GapFill:
                 mass = row['Calibrated m/z']
                 time = row['Time']
 
-                mrange = [mass*(1-2/resolution), mass*(1+2/resolution)]
+                dm = factor * (1 / resolution)
+                mrange = [mass * (1 - dm), mass * (1 + dm)]
 
                 matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
                 
