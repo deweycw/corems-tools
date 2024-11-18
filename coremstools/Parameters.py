@@ -21,9 +21,9 @@ class Settings:
         m/z of internal standard used for quality control checks; defaults to 678.2915, which is the mass of [cyanocobalamin]2+ (vitamin B12)
     sample_list : str
         Full path to .csv file containing sample list. This file will be imported as Pandas DataFrame 
-    csvfile_addend : str
+    [DEPRECATED] csvfile_addend : str
         Textual difference between the name of the Thermo .raw file and the .csv file containing the unprocessed CoreMS assignments. If the .raw file is named SAMPLE.raw, then the assignments file is assumed to be named 'SAMPLE' + csvfile_addend + '.csv'. Defaults to '_assignments'. 
-    dispersity_addend : str
+    [DEPRECATED] dispersity_addend : str
         Textual difference between the name of the Thermo .raw file and the .csv file with the processed CoreMS assignments AND dispersity calculation.'
     """
 
@@ -32,8 +32,8 @@ class Settings:
     eic_tolerance: float = 5.0 # ppm 
     internal_std_mz: float = 678.2915 # defaults to mass of [cyanocobalamin]2+
     sample_list: str = '' # 
-    csvfile_addend = ''
-    dispersity_addend = csvfile_addend
+    #csvfile_addend = ''
+    #dispersity_addend = csvfile_addend
     time_interval = 2
     std_time_range = [0,20]
     blank_sample_name = ''
