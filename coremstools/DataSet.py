@@ -147,7 +147,7 @@ class DataSet(Features):
             self.feature_list = Features(self.sample_list)
             try:
                 if len(self.feature_list_ddf.columns) > 0:
-                    self.feature_list.feature_list_ddf = self.feature_list_ddf
+                    self.feature_list.feature_list_df = self.feature_list_ddf
             except:
                 pass
         
