@@ -2,7 +2,7 @@
 #import dask.dataframe as dd
 
 from coremstools.Align import Align
-from coremstools.GapFill import GapFill 
+from coremstools.GapFill import Consolidate 
 from coremstools.Parameters import Settings
 
 class Features:
@@ -47,14 +47,14 @@ class Features:
 
         if self.feature_list_ddf is not None:         
             if experimental:
-                self.feature_list_ddf = GapFill.GapFill_experimental_2(self, self.feature_list_ddf)
+                self.feature_list_ddf = Consolidate.GapFill_experimental_2(self, self.feature_list_ddf)
             else:
-                self.feature_list_ddf = GapFill.GapFill(self, gapfill_variable, self.feature_list_ddf)
+                self.feature_list_ddf = Consolidate.run(self, gapfill_variable, self.feature_list_ddf)
 
 
         else:
             self.run_alignment(include_dispersity, experimental)
-            self.feature_list_ddf = GapFill.GapFill(self, self.feature_list_ddf)
+            self.feature_list_ddf = Consolidate.run(self, self.feature_list_ddf)
         
 
     def flag_errors(self):

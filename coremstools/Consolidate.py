@@ -2,13 +2,13 @@ from pandas import unique, concat
 from numpy import array, zeros, shape, where, log10, log, sqrt
 from tqdm import tqdm
 
-class GapFill:
+class Consolidate:
     
-    def GapFill(self, gapfill_variable, features_df, consolidation_width = "2sigma"):
+    def run(self, consolidate_var, features_df, consolidation_width = "2sigma"):
         
-        features_df['gapfill'] = 0
-        features_df['gapfill flag'] = 0
-        features_df['gapfill id'] = 0
+        features_df['consolidated'] = 0
+        features_df['consolidated flag'] = 0
+        features_df['consolidated id'] = 0
 
         if consolidation_width == "2sigma":
             factor = 1 / (sqrt(2 * log(2)))
@@ -19,7 +19,7 @@ class GapFill:
 
         intensity_cols = list(features_df.filter(regex='Intensity').columns)
 
-        print('running gapfil...')        
+        print('running consolidation...')        
         pbar = tqdm(range(len(features_df.index)))
         
         gf_id = 1
@@ -28,7 +28,7 @@ class GapFill:
         
             row = features_df.iloc[ix]
 
-            if row['gapfill id'] == 0:
+            if row['consolidated id'] == 0:
                 
                 resolution = row['Resolving Power'] 
                 mass = row['Calibrated m/z']
@@ -41,20 +41,20 @@ class GapFill:
                 
                 if(len(matches.index) > 1):
                     
-                    features_df.loc[matches.index,'gapfill'] = 1
-                    features_df.loc[matches.index, 'gapfill id'] = gf_id
+                    features_df.loc[matches.index,'consolidated'] = 1
+                    features_df.loc[matches.index, 'consolidated id'] = gf_id
                     gf_id = gf_id + 1
 
                     matches_sum = matches.filter(regex='Intensity').sum(axis=0)
 
                     features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
-                    if gapfill_variable == 'm/z Error (ppm)':
-                        sub = matches.loc[abs(matches[gapfill_variable]) > min(abs(matches[gapfill_variable])), 'gapfill flag']
-                    elif gapfill_variable == 'mz error flag':
-                        sub = matches.loc[matches[gapfill_variable] > min(matches[gapfill_variable]), 'gapfill flag']
+                    if consolidate_var == 'm/z Error (ppm)':
+                        sub = matches.loc[abs(matches[consolidate_var]) > min(abs(matches[consolidate_var])), 'consolidated flag']
+                    elif consolidate_var == 'mz error flag':
+                        sub = matches.loc[matches[consolidate_var] > min(matches[consolidate_var]), 'consolidated flag']
                     else:
-                        sub = matches.loc[matches[gapfill_variable] < max(matches[gapfill_variable]), 'gapfill flag']
-                    features_df.loc[sub.index, 'gapfill flag'] = 1
+                        sub = matches.loc[matches[consolidate_var] < max(matches[consolidate_var]), 'consolidated flag']
+                    features_df.loc[sub.index, 'consolidated flag'] = 1
         
         return features_df 
     
