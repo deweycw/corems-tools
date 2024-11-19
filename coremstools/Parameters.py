@@ -31,7 +31,7 @@ class Settings:
     assignments_directory: str = ''
     eic_tolerance: float = 5.0 # ppm 
     internal_std_mz: float = 678.2915 # defaults to mass of [cyanocobalamin]2+
-    sample_list: str = '' # 
+    sample_list: str = '' #  
     time_interval = 2
     std_time_range = [0,20]
     blank_sample_name = ''
