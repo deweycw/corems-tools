@@ -34,7 +34,7 @@ class DataSet(Features):
 
         self.time_interval = Settings.time_interval
         self.feature_list = None
-        self.feature_list_ddf = None
+        self.feature_list_df = None
 
         if (self.sample_list == None) & (self.path_to_sample_list != None):
             
@@ -146,8 +146,8 @@ class DataSet(Features):
         if self.feature_list == None:
             self.feature_list = Features(self.sample_list)
             try:
-                if len(self.feature_list_ddf.columns) > 0:
-                    self.feature_list.feature_list_df = self.feature_list_ddf
+                if len(self.feature_list_df.columns) > 0:
+                    self.feature_list.feature_list_df = self.feature_list_df
             except:
                 pass
         
