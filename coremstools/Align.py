@@ -11,7 +11,7 @@ from coremstools.Parameters import Settings
 
 class Align:
 
-    def Align(self, sample_list, include_dispersity = True):
+    def run(self, sample_list, include_dispersity = True):
         """
         Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
@@ -34,7 +34,7 @@ class Align:
                 
                 masterresults[col] = {}
                 
-                masterresults[col + '_sd'] = {}
+                masterresults[col + '_se'] = {}
 
             return masterresults
 
@@ -137,12 +137,13 @@ class Align:
 
             for c in averaged_cols:
 
-                masterresults[c+'_sd'][key] = std(masterresults[c][key])
+                masterresults[c+'_se'][key] = std(masterresults[c][key]) / masterresults['N Samples'][key]
                 masterresults[c][key] = mean(masterresults[c][key])
+
         results_df = pd.DataFrame(masterresults).fillna(0)
         cols_at_end = [c for c in results_df.columns if 'Intensity' in c ]
         
-        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] 
+        final_col_list = shared_columns + [ f for f in averaged_cols] + [ f + '_se' for f in averaged_cols] 
 
         final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + used_elements + ['N Samples'] + cols_at_end
         
@@ -240,7 +241,7 @@ class Align:
 
         stdev = averaged_params.groupby(by='feature').std()
 
-        joined = averaged.join(stdev,lsuffix = '_mean', rsuffix = '_sd')
+        joined = averaged.join(stdev,lsuffix = '_mean', rsuffix = '_se')
 
         shared = all_results[shared_columns]
         
@@ -267,7 +268,7 @@ class Align:
         joined2 = feature_groups.join(n_samples.to_frame(name='N Samples'))
         joined3 = joined2.groupby(joined2.index).first() #  [last(joined2.index.drop_duplicates())]
 
-        final_col_list = [ f + '_mean' for f in averaged_cols] + [ f + '_sd' for f in averaged_cols] + ['N Samples']
+        final_col_list = [ f + '_mean' for f in averaged_cols] + [ f + '_se' for f in averaged_cols] + ['N Samples']
         final_col_list = shared_columns + final_col_list
         final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + flist
         return joined3[final_col_list]

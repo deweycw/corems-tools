@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     dset.run_alignment()
 
-    dset.run_gapfill()
+    dset.run_consolidation()
 
     dset.flag_blank_features()
 
