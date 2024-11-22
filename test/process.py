@@ -12,8 +12,6 @@ if __name__ == '__main__':
     Settings.std_time_range = [10,12]
     Settings.time_interval = 1
     #Settings.blank_sample_name = '20221103_LBA_Boiteau_Zorbax3p5_qh2o_fullmz'
-    Settings.csvfile_addend = '_cd-2405'
-    Settings.dispersity_addend = '_dispersity'
 
     dset = DataSet(path_to_sample_list = Settings.raw_file_directory + 'SampleList.csv')
     

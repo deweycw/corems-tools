@@ -11,9 +11,11 @@ if __name__ == '__main__':
     Settings.internal_std_mz = 678.2915
     Settings.std_time_range = [7,10]
     Settings.time_interval = 2
-    Settings.blank_sample_name = '20221103_LBA_Boiteau_Zorbax3p5_qh2o_fullmz'
+    #Settings.blank_sample_name = '20221103_LBA_Boiteau_Zorbax3p5_qh2o_fullmz'
 
-    dset = DataSet(path_to_sample_list = Settings.raw_file_directory + 'sample_list.csv')
+
+
+    dset = DataSet(path_to_sample_list = Settings.raw_file_directory + 'samplelist.csv')
 
     dset.run_internal_std_qc()
 
