@@ -137,7 +137,7 @@ class Align:
 
             for c in averaged_cols:
 
-                masterresults[c+'_se'][key] = std(masterresults[c][key]) / masterresults['N Samples'][key]
+                masterresults[c+'_se'][key] = std(masterresults[c][key]) / np.sqrt(masterresults['N Samples'][key])
                 masterresults[c][key] = mean(masterresults[c][key])
 
         results_df = pd.DataFrame(masterresults).fillna(0)
