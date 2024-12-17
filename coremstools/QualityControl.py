@@ -52,33 +52,31 @@ class QualityControl:
             '''except:
                 print('--File not found: ' + file)'''
 
-        #axs['a'].get_legend().remove() #(loc='center left', bbox_to_anchor=(1, 0.5))
-        axs['a'].set_title('a', fontweight='bold', loc='left')
         axs['a'].set_ylabel('Intensity (x 1e7)')
 
         samplelist=samplelist.set_index('File')
 
-        samplelist['qc_area'] = Series(area)
-        samplelist['QC Retention time'] = Series(rt)
+        samplelist['QC Area '+str(stdmass)] = Series(area)
+        samplelist['QC Retention time '+str(stdmass)] = Series(rt)
 
         # Flag outliers with peak area greater than 2x standard deviation of the mean 
 
-        peak_stdv=samplelist.qc_area.std()
-        peak_mean=samplelist.qc_area.mean()
+        peak_stdv=samplelist['QC Area '+str(stdmass)].std()
+        peak_mean=samplelist['QC Area '+str(stdmass)].mean()
 
-        samplelist['qc_pass']=0
+        samplelist['QC Pass '+str(stdmass)]=0
         for i in samplelist.index:
-            if (abs(samplelist.qc_area[i]-peak_mean)<2*peak_stdv):
-                samplelist.loc[i,'qc_pass']=1
+            if (abs(samplelist['QC Area '+str(stdmass)][i]-peak_mean)<2*peak_stdv):
+                samplelist.loc[i,'QC Pass '+str(stdmass)]=1
 
-        print(str(samplelist.qc_pass.sum()) + ' pass of ' + str(len(samplelist)) + ' files (i.e., peak area of standard is <= 2x standard deviation of the mean)')
+        print(str(samplelist['QC Pass '+str(stdmass)].sum()) + ' pass of ' + str(len(samplelist)) + ' files (i.e., peak area of standard is <= 2x standard deviation of the mean)')
 
-        peak_stdv=samplelist[samplelist.qc_pass==1].qc_area.std()
+        peak_stdv=samplelist[samplelist['QC Pass '+str(stdmass)]==1]['QC Area '+str(stdmass)].std()
 
         print('std dev of area of standard peak: ' + str(round(peak_stdv/peak_mean*100,1))+'%' )
    
         samplelist.replace([inf, -inf], nan, inplace=True)
-        histplot(x='qc_area',data=samplelist,ax=axs['b'])
+        histplot(x='QC Area '+str(stdmass),data=samplelist,ax=axs['b'])
         axs['b'].set_xlabel('Internal Standard Peak Area')
         
         xpltl = -.0
