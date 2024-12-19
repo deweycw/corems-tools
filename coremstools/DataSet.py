@@ -1,8 +1,10 @@
 __author__ = "Christian Dewey & Rene Boiteau"
-__date__ = "2024 May 14"
-__version__ = "0.0.1"
+__date__ = "2024 Dec 19"
+__version__ = "0.0.2"
 
 from pandas import read_csv
+from pandas import DataFrame
+import os
 
 from coremstools.FeatureList import Features
 from coremstools.Parameters import Settings
@@ -34,7 +36,8 @@ class DataSet(Features):
 
         self.time_interval = Settings.time_interval
         self.feature_list = None
-        #self.feature_list_df = None
+        self.feature_list_df = None
+        self.filetype = '.raw'
 
         if (sample_list == None) & (self.path_to_sample_list != None):
             
@@ -51,7 +54,11 @@ class DataSet(Features):
 
     def _initialize_from_sample_list_file(self):
 
-        return read_csv(self.path_to_sample_list, index_col = None)
+        if not os.path.exists(self.path_to_sample_list):
+            print(f"File '{self.path_to_sample_list}' not found. Creating...")
+            self.create_samplelist()
+
+        self.sample_list = read_csv(self.path_to_sample_list, index_col = None)
 
     def assign_mol_class(self):
         '''
@@ -209,4 +216,21 @@ class DataSet(Features):
         self.feature_list.export_csv(fname)
         
 
+    def create_samplelist(self):
+        """
+        Creates a pandas DataFrame listing all '.raw' files in a given directory.
+        Args:
+        data_dir: The directory to search for files.
+        filename: the name of the sample list
 
+        Returns:
+        Saves as a csv a pandas DataFrame with a 'File' column containing the names of all '.raw' files.
+        """
+
+        raw_files = []
+        for filename in os.listdir(Settings.raw_file_directory):
+            if filename.endswith(self.filetype):
+                raw_files.append(filename)
+        df=DataFrame({'File': raw_files})
+        print(df)
+        df.to_csv(self.path_to_sample_list, index=False)
