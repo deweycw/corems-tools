@@ -79,40 +79,25 @@ class Features:
 
         col = None
 
-        blank_sample = Settings.blank_sample_name
+        for blank_sample in Settings.blank_sample_list:
 
-        if '.' in blank_sample:
-        
-            blank_sample = blank_sample.split('.')[0]
-
-        for col in self.feature_list_df.columns:
+            if '.' in blank_sample:
             
-            if blank_sample in col:
+                blank_sample = blank_sample.split('.')[0]
 
-                blank_sample_col = col
+            for col in self.feature_list_df.columns:
+                
+                if blank_sample in col:
 
-        self.feature_list_df['Max Intensity'] = self.feature_list_df.filter(regex='Intensity').max(axis=1)
-        self.feature_list_df['blank'] = self.feature_list_df[blank_sample_col].fillna(0) / self.feature_list_df['Max Intensity']
+                    blank_sample_col = col
+
+            self.feature_list_df['Max Intensity'] = self.feature_list_df.filter(regex='Intensity').max(axis=1)
+            self.feature_list_df['blank'] = self.feature_list_df[blank_sample_col].fillna(0) / self.feature_list_df['Max Intensity']
 
 
     def stoichiometric_classification(self):
 
         print('Determining stoichiometric classifications...')
-
-        '''count = True
-        elements = []
-        for c in self.feature_list_ddf.columns:
-            if count:
-                if c == 'N Samples':
-                    count = False
-                continue
-            else:
-                if 'Intensity' in c:
-                    count = False
-                    continue
-                else:
-                    elements.append(c)
-'''
 
         self.feature_list_df['Stoichiometric classification']='Unclassified'
 
@@ -225,7 +210,6 @@ class Features:
     def export_csv(self, fname):
 
         print('writing to .csv...')
-        #dir = '/home/christiandewey/Dropbox/'
         dir = Settings.assignments_directory
         self.feature_list_df.to_csv(dir + fname, index = False) #, single_file = True, header_first_partition_only = True)
         
