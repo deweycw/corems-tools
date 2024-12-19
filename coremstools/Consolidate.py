@@ -59,22 +59,6 @@ class Consolidate:
         return features_df 
     
 
-    def gapfill_legacy(self, featurelist):
-        featurelist['gapfill']=False
-        featurelist['gapfill flag']=False
-        for i, row in featurelist.iterrows():
-            resolution=row['Resolving Power']
-            mass=row['Calibrated m/z']
-            time=row['Time']
-            mrange=[mass*(1-2/resolution),mass*(1+2/resolution)]
-            matches=featurelist[(featurelist['Calibrated m/z']>mrange[0])&(featurelist['Calibrated m/z']<mrange[1])&(featurelist['Time']==time)]
-            if(len(matches)>1):
-                featurelist.loc[i,'gapfill']=True
-                featurelist.loc[i,featurelist.filter(regex='Intensity').columns]=matches.filter(regex='Intensity').sum(axis=0)
-                if featurelist.loc[i,gapfill_variable]<max(matches[gapfill_variable]):
-                    featurelist.loc[i,'gapfill flag']=True
-        return(featurelist)    
-
     def GapFill_experimental(self, features_ddf):
         
         features_ddf['gapfill'] = False

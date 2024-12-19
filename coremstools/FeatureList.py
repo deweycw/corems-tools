@@ -29,7 +29,8 @@ class Features:
     """
     def __init__(self, sample_list):
         
-        #self.feature_list_ddf = None
+        self.feature_list_df = None
+        print('feature list init func')
         self.sample_list = sample_list
 
     def run_alignment(self, include_dispersity, experimental):
@@ -43,20 +44,15 @@ class Features:
             self.feature_list_df = Align.run(self, self.sample_list, include_dispersity)
 
 
-    def run_consolidation(self, gapfill_variable, include_dispersity, experimental):
+    def run_consolidation(self, gapfill_variable, include_dispersity):
 
         if self.feature_list_df is not None:         
-            if experimental:
-                self.feature_list_df = Consolidate.GapFill_experimental_2(self, self.feature_list_df)
-            else:
-                self.feature_list_df = Consolidate.run(self, gapfill_variable, self.feature_list_df)
-
+            self.feature_list_df = Consolidate.run(self, gapfill_variable, self.feature_list_df)
 
         else:
-            self.run_alignment(include_dispersity, experimental)
+            self.run_alignment(include_dispersity)
             self.feature_list_df = Consolidate.run(self, self.feature_list_df)
-        
-
+                
     def flag_errors(self):
 
         '''
@@ -97,7 +93,7 @@ class Features:
 
     def stoichiometric_classification(self):
 
-        print('Determining stoichiometric classifications...')
+        print('determining stoichiometric classifications...')
 
         self.feature_list_df['Stoichiometric classification']='Unclassified'
 

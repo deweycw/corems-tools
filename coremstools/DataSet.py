@@ -30,28 +30,28 @@ class DataSet(Features):
     def __init__(self, path_to_sample_list=None, sample_list=None):
         
         self.path_to_sample_list = path_to_sample_list  
-        self.sample_list = sample_list
+        #self.sample_list = sample_list
 
         self.time_interval = Settings.time_interval
         self.feature_list = None
-        self.feature_list_df = None
+        #self.feature_list_df = None
 
-        if (self.sample_list == None) & (self.path_to_sample_list != None):
+        if (sample_list == None) & (self.path_to_sample_list != None):
             
-            self._initialize_from_sample_list_file()
+            super().__init__(self._initialize_from_sample_list_file())
         
-        elif (self.sample_list == None) & (self.path_to_sample_list == None):
+        elif (sample_list == None) & (self.path_to_sample_list == None):
 
             print('Please provide either (1) the sample list as a Pandas DataFrame or (2) a path to sample list (.csv)')
 
-        elif (self.sample_list != None) & (self.path_to_sample_list != None):
+        elif (sample_list != None) & (self.path_to_sample_list != None):
 
             print('A sample list dataframe and a path were provived. Defaulting to provided DataFrame.')
     
 
     def _initialize_from_sample_list_file(self):
 
-        self.sample_list = read_csv(self.path_to_sample_list, index_col = None)
+        return read_csv(self.path_to_sample_list, index_col = None)
 
     def assign_mol_class(self):
         '''
@@ -169,16 +169,18 @@ class DataSet(Features):
         self.feature_list.run_alignment(include_dispersity, experimental)
 
 
-    def run_consolidation(self, gapfill_variable = 'Confidence Score', include_dispersity = True, experimental = False):
+    def run_consolidation(self, gapfill_variable = 'Confidence Score', include_dispersity = True):
         '''
-        Method to perform gapfilling of features across dataset.
+        Method to perform consolidation of features across dataset.
         '''        
         self._check_for_feature_list()
-        self.feature_list.run_consolidation(gapfill_variable, include_dispersity, experimental)
+        self.feature_list.run_consolidation(gapfill_variable, include_dispersity)
 
 
     def calc_rolling_error(self):
-
+        '''
+        Method to calculate rolling error and filter outliers
+        '''
         self._check_for_feature_list()
         self.feature_list.flag_errors()
 
@@ -190,6 +192,14 @@ class DataSet(Features):
         self._check_for_feature_list()
         self.feature_list.flag_blank_features()
 
+
+    def calc_stoichiometric_classifications(self):
+        '''
+        Method to calculate stoichiometric classifications
+        '''
+        self._check_for_feature_list()
+        self.feature_list.stoichiometric_classification()
+    
 
     def export_feature_list(self, fname = 'feature_list.csv'):
         '''
