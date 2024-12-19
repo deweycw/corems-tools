@@ -65,4 +65,4 @@ class Dispersity:
         mzs = list(assignments['m/z'].drop_duplicates())
         eics = parser.get_eics(target_mzs=mzs, tic_data={}, peak_detection=False, smooth=False)
         assignments['Dispersity'], assignments['Retention Time'] = zip(*assignments.apply(get_dispersity_rt, eics = eics, axis=1))
-        assignments.to_csv(sample.replace('.csv','_dispersity.csv'), index=False)
+        assignments.to_csv(sample.replace('.csv'), index=False)
