@@ -21,10 +21,12 @@ class Settings:
         m/z of internal standard used for quality control checks; defaults to 678.2915, which is the mass of [cyanocobalamin]2+ (vitamin B12)
     sample_list : str
         Full path to .csv file containing sample list. This file will be imported as Pandas DataFrame 
-    [DEPRECATED] csvfile_addend : str
-        Textual difference between the name of the Thermo .raw file and the .csv file containing the unprocessed CoreMS assignments. If the .raw file is named SAMPLE.raw, then the assignments file is assumed to be named 'SAMPLE' + csvfile_addend + '.csv'. Defaults to '_assignments'. 
-    [DEPRECATED] dispersity_addend : str
-        Textual difference between the name of the Thermo .raw file and the .csv file with the processed CoreMS assignments AND dispersity calculation.'
+    time_interval : int
+        Time interval overwhich to average MS scans
+    std_time_range  : list
+        Min and max time range in which to look for standard; first element of list is min, second element is max
+    blank_sample_list : list
+        List of blank file names (strings)
     """
 
     raw_file_directory: str = ''
@@ -34,5 +36,5 @@ class Settings:
     sample_list: str = '' #  
     time_interval = 2
     std_time_range = [0,20]
-    blank_sample_name = ''
+    blank_sample_list = []
     

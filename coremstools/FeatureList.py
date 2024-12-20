@@ -29,7 +29,8 @@ class Features:
     """
     def __init__(self, sample_list):
         
-        #self.feature_list_ddf = None
+        self.feature_list_df = None
+        print('feature list init func')
         self.sample_list = sample_list
 
     def run_alignment(self, include_dispersity, experimental):
@@ -43,20 +44,15 @@ class Features:
             self.feature_list_df = Align.run(self, self.sample_list, include_dispersity)
 
 
-    def run_consolidation(self, gapfill_variable, include_dispersity, experimental):
+    def run_consolidation(self, gapfill_variable, include_dispersity):
 
         if self.feature_list_df is not None:         
-            if experimental:
-                self.feature_list_df = Consolidate.GapFill_experimental_2(self, self.feature_list_df)
-            else:
-                self.feature_list_df = Consolidate.run(self, gapfill_variable, self.feature_list_df)
-
+            self.feature_list_df = Consolidate.run(self, gapfill_variable, self.feature_list_df)
 
         else:
-            self.run_alignment(include_dispersity, experimental)
+            self.run_alignment(include_dispersity)
             self.feature_list_df = Consolidate.run(self, self.feature_list_df)
-        
-
+                
     def flag_errors(self):
 
         '''
@@ -79,40 +75,25 @@ class Features:
 
         col = None
 
-        blank_sample = Settings.blank_sample_name
+        for blank_sample in Settings.blank_sample_list:
 
-        if '.' in blank_sample:
-        
-            blank_sample = blank_sample.split('.')[0]
-
-        for col in self.feature_list_df.columns:
+            if '.' in blank_sample:
             
-            if blank_sample in col:
+                blank_sample = blank_sample.split('.')[0]
 
-                blank_sample_col = col
+            for col in self.feature_list_df.columns:
+                
+                if blank_sample in col:
 
-        self.feature_list_df['Max Intensity'] = self.feature_list_df.filter(regex='Intensity').max(axis=1)
-        self.feature_list_df['blank'] = self.feature_list_df[blank_sample_col].fillna(0) / self.feature_list_df['Max Intensity']
+                    blank_sample_col = col
+
+            self.feature_list_df['Max Intensity'] = self.feature_list_df.filter(regex='Intensity').max(axis=1)
+            self.feature_list_df['blank'] = self.feature_list_df[blank_sample_col].fillna(0) / self.feature_list_df['Max Intensity']
 
 
     def stoichiometric_classification(self):
 
-        print('Determining stoichiometric classifications...')
-
-        '''count = True
-        elements = []
-        for c in self.feature_list_ddf.columns:
-            if count:
-                if c == 'N Samples':
-                    count = False
-                continue
-            else:
-                if 'Intensity' in c:
-                    count = False
-                    continue
-                else:
-                    elements.append(c)
-'''
+        print('determining stoichiometric classifications...')
 
         self.feature_list_df['Stoichiometric classification']='Unclassified'
 
@@ -225,7 +206,6 @@ class Features:
     def export_csv(self, fname):
 
         print('writing to .csv...')
-        #dir = '/home/christiandewey/Dropbox/'
         dir = Settings.assignments_directory
         self.feature_list_df.to_csv(dir + fname, index = False) #, single_file = True, header_first_partition_only = True)
         
