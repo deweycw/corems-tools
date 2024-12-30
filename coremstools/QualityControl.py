@@ -1,6 +1,7 @@
 from pandas import Series, DataFrame
 from numpy import inf, nan
 import matplotlib.pyplot as plt
+import scipy
 
 from seaborn import histplot
 
@@ -31,54 +32,60 @@ class QualityControl:
         LCMSParameters.lc_ms.scans=(-1,-1)
         area={}
         rt={}
+        ppmerror={}
 
         _, axs = plt.subplot_mosaic([['a','b']], figsize=(11,5), constrained_layout=True)
         axs['a'].set(xlabel='Time (min)',ylabel='Intensity',title='Internal Standard EIC = '+str(stdmass) + ' m/z')
         
         print('running QC check ...')
         for file in samplelist['File'].unique():
-            #try:
             parser = rawFileReader.ImportMassSpectraThermoMSFileReader(data_dir+file)
             parser.chromatogram_settings.eic_tolerance_ppm= Settings.eic_tolerance
 
             EIC=parser.get_eics(target_mzs=[stdmass],tic_data={},peak_detection=False,smooth=False)
             
-            df=DataFrame({'EIC':EIC[0][stdmass].eic,'time':EIC[0][stdmass].time})
+            df=DataFrame({'EIC':EIC[0][stdmass].eic,'time':EIC[0][stdmass].time,'scan':EIC[0][stdmass].scans})
             df_sub=df[df['time'].between(std_timerange[0],std_timerange[1])]
-            area[file]=(sum(df_sub['EIC']))
+            area[file]=scipy.integrate.trapz(df_sub['EIC'],df_sub['time'])
             rt[file]=(df_sub.time[df_sub.EIC==df_sub.EIC.max()].max())
             axs['a'].plot(df_sub['time'],df_sub['EIC']/1e7,label=file[11:])
-            print('  ' + file)
-            '''except:
-                print('--File not found: ' + file)'''
 
-        #axs['a'].get_legend().remove() #(loc='center left', bbox_to_anchor=(1, 0.5))
-        axs['a'].set_title('a', fontweight='bold', loc='left')
+            #Determine m/z error based on 3 mass spectra from the apex of the internal std peak. 
+            scan=df_sub.sort_values('EIC',ascending=False).head(3).scan.to_list()
+            mass_spectrum = parser.get_average_mass_spectrum_by_scanlist(scan)
+            masses=mass_spectrum.to_dataframe()['m/z']
+            mdiff=abs(masses-stdmass)
+            mass=masses[mdiff==mdiff.min()].to_numpy()
+            err=(mass-stdmass)/stdmass*1e6
+            ppmerror[file]=err[0]
+
+            print('  ' + file)
+
         axs['a'].set_ylabel('Intensity (x 1e7)')
 
         samplelist=samplelist.set_index('File')
 
-        samplelist['qc_area'] = Series(area)
-        samplelist['QC Retention time'] = Series(rt)
+        samplelist['QC Area '+str(stdmass)] = Series(area)
+        samplelist['QC Retention time '+str(stdmass)] = Series(rt)
+        samplelist['m/z error (ppm)'] = Series(ppmerror)
 
         # Flag outliers with peak area greater than 2x standard deviation of the mean 
+        peak_stdv=samplelist['QC Area '+str(stdmass)].std()
+        peak_mean=samplelist['QC Area '+str(stdmass)].mean()
 
-        peak_stdv=samplelist.qc_area.std()
-        peak_mean=samplelist.qc_area.mean()
-
-        samplelist['qc_pass']=0
+        samplelist['QC Pass '+str(stdmass)]=0
         for i in samplelist.index:
-            if (abs(samplelist.qc_area[i]-peak_mean)<2*peak_stdv):
-                samplelist.loc[i,'qc_pass']=1
+            if (abs(samplelist['QC Area '+str(stdmass)][i]-peak_mean)<2*peak_stdv):
+                samplelist.loc[i,'QC Pass '+str(stdmass)]=1
 
-        print(str(samplelist.qc_pass.sum()) + ' pass of ' + str(len(samplelist)) + ' files (i.e., peak area of standard is <= 2x standard deviation of the mean)')
+        print(str(samplelist['QC Pass '+str(stdmass)].sum()) + ' pass of ' + str(len(samplelist)) + ' files (i.e., peak area of standard is <= 2x standard deviation of the mean)')
 
-        peak_stdv=samplelist[samplelist.qc_pass==1].qc_area.std()
+        peak_stdv=samplelist[samplelist['QC Pass '+str(stdmass)]==1]['QC Area '+str(stdmass)].std()
 
         print('std dev of area of standard peak: ' + str(round(peak_stdv/peak_mean*100,1))+'%' )
    
         samplelist.replace([inf, -inf], nan, inplace=True)
-        histplot(x='qc_area',data=samplelist,ax=axs['b'])
+        histplot(x='QC Area '+str(stdmass),data=samplelist,ax=axs['b'])
         axs['b'].set_xlabel('Internal Standard Peak Area')
         
         xpltl = -.0
@@ -97,7 +104,3 @@ class QualityControl:
         samplelist.reset_index(inplace=True)
 
         return samplelist
-        
-
-
-
