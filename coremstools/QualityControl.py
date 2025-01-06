@@ -47,9 +47,7 @@ class QualityControl:
             
             df=DataFrame({'EIC':EIC[0][stdmass].eic,'time':EIC[0][stdmass].time,'scan':EIC[0][stdmass].scans})
             df_sub=df[df['time'].between(std_timerange[0],std_timerange[1])]
-            # Baseline estimation: simplest approach is to use the minimum intensity
-            baseline = df_sub.EIC.min()            
-            area[file]=scipy.integrate.trapz(df_sub['EIC']-baseline,df_sub['time'])
+            area[file]=scipy.integrate.trapz(df_sub['EIC'],df_sub['time'])
             rt[file]=(df_sub.time[df_sub.EIC==df_sub.EIC.max()].max())
             axs['a'].plot(df_sub['time'],df_sub['EIC']/1e7,label=file[11:])
 
@@ -107,37 +105,3 @@ class QualityControl:
         samplelist.reset_index(inplace=True)
 
         return samplelist
-    
-
-    def tic_plot(self,samplelist,save_file='TIC_plot.jpg',xlimits=None):
-        """
-        Plots the total ion chromatogram (TIC) for each sample in the sample list.
-
-        Args:
-            samplelist (pandas.DataFrame): A DataFrame containing a 'File' column with file paths.
-            filename (str): The filename to save the plot as.
-
-        Returns:
-            None
-        """
-        data_dir = Settings.raw_file_directory
-
-        print('Generating TIC plot ...')
-
-        tics=[]
-        for file in samplelist['File'].unique():
-            parser = rawFileReader.ImportMassSpectraThermoMSFileReader(data_dir+file)
-            tic=parser.get_tic(ms_type='MS',peak_detection=False, smooth=False)[0]
-            tic_df=DataFrame({'Time': tic.time,'Intensity': tic.tic,'Sample':file.replace('.raw','')})
-            tics.append(tic_df)
-
-        tics=concat(tics)
-        fig, (ax) = plt.subplots(1)
-        lineplot(x='Time',y='Intensity',data=tics,ax=ax, hue='Sample')
-        ax.set_xlabel('Time (min)')
-        ax.set_ylabel('Total Ion Current Intensity')
-        if(xlimits):
-            ax.set_xlim(xlimits)
-        ax.legend()
-        plt.tight_layout()
-        fig.savefig(data_dir +save_file,dpi=300,format='jpg')
