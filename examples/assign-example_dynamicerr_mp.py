@@ -19,39 +19,8 @@ from corems.encapsulation.factory.parameters import MSParameters
 from corems.mass_spectrum.calc.Calibration import MzDomainCalibration
 
 
-def assign_formula(file, times, interval, error, ref): 
+def assign_formula(file, times, refmasslist=None): 
 
-
-	# peak picking and assignment
-	MSParameters.mass_spectrum.min_picking_mz=50	# integer, minimum m/z that will be assigned
-	MSParameters.mass_spectrum.max_picking_mz=800 # integer, maximum m/z that will be assigned
-	MSParameters.mass_spectrum.noise_threshold_method = 'log'
-	MSParameters.mass_spectrum.noise_threshold_log_nsigma = 10 # integer, should be ~7-10 for most cases (lower will keep more noise)
-	MSParameters.mass_spectrum.noise_threshold_log_nsigma_bins = 500 # integer, should be kept around 500
-	MSParameters.ms_peak.peak_min_prominence_percent = 0.02 # relative intensity of lowest vs highest peak in spectrum. Keep around 0.01 to 0.1 . 
-
-	# assigment & database
-	MSParameters.molecular_search.url_database = 'postgresql+psycopg2://coremsappdb:coremsapppnnl@corems-molformdb-1:5432/coremsapp'
-	MSParameters.molecular_search.db_chunk_size = 500
-	MSParameters.molecular_search.error_method = None
-	MSParameters.mass_spectrum.noise_threshold_method = 'log'
-	MSParameters.molecular_search.min_ppm_error = -0.25 # acceptable post-calibration minimum mass error for assigments (orbitraps, window should be 1-2ppm)
-	MSParameters.molecular_search.max_ppm_error = 0.25 # acceptable post-calibration maximum mass error for assigments (orbitraps, window should be 1-2ppm)
-	#MSParameters.molecular_search.mz_error_score_weight: float = 0.6
-	#MSParameters.molecular_search.isotopologue_score_weight: float = 0.4
-    #MSParameters.molecular_search.score_method = "prob_score"
-    #MSParameters.molecular_search.output_score_method = "prob_score"
-	MSParameters.ms_peak.legacy_resolving_power = False
-
-	# calibration
-	MSParameters.mass_spectrum.min_calib_ppm_error = error-2 # minimum ppm error for detecting m/z calibrant peaks
-	MSParameters.mass_spectrum.max_calib_ppm_error = error+2 # maximum ppm error for detecting m/z calibrant peaks
-	MSParameters.mass_spectrum.calib_pol_order = 2
-	#MSParameters.mass_spectrum.calib_sn_threshold = 50
-
-	MSParameters.molecular_search.url_database = 'postgresql+psycopg2://coremsappdb:coremsapppnnl@corems-molformdb-1:5432/coremsapp'
-	MSParameters.molecular_search.score_method = "prob_score"
-	MSParameters.molecular_search.output_score_method = "prob_score"
 	print("Loading file: "+ file)
 	
 	parser = rawFileReader.ImportMassSpectraThermoMSFileReader(file)
@@ -59,24 +28,25 @@ def assign_formula(file, times, interval, error, ref):
 	tic=parser.get_tic(ms_type='MS',smooth=False,peak_detection=False)[0]
 	tic_df=pd.DataFrame({'time': tic.time,'scan': tic.scans})
 	
-	ref_file = file.split('.')[0] +'_'+ ref
-	refmasslist = ref_file
-
 	results = []
-	for timestart in times:
-		print(timestart)
-		scans=tic_df[tic_df.time.between(timestart,timestart+interval)].scan.tolist()
+	for t in range(len(times)-1):
+		print(times[t])
+		t1=times[t]
+		t2=times[t+1]
+		scans=tic_df[tic_df.time.between(t1,t2)].scan.tolist()
 		mass_spectrum = parser.get_average_mass_spectrum_by_scanlist(scans)
 		
-		MzDomainCalibration(mass_spectrum, refmasslist,mzsegment=[0,1000]).run()
+		if refmasslist:
+			MzDomainCalibration(mass_spectrum, refmasslist,mzsegment=[0,1000]).run()
+		'''
 		mass_spectrum.molecular_search_settings.min_dbe = 0
 		mass_spectrum.molecular_search_settings.max_dbe = 20
 		mass_spectrum.molecular_search_settings.usedAtoms['C'] = (1, 40)
 		mass_spectrum.molecular_search_settings.usedAtoms['H'] = (4, 80)
 		mass_spectrum.molecular_search_settings.usedAtoms['O'] = (0, 15)
-		mass_spectrum.molecular_search_settings.usedAtoms['N'] = (0, 10)
+		mass_spectrum.molecular_search_settings.usedAtoms['N'] = (0, 8)
 		mass_spectrum.molecular_search_settings.usedAtoms['S'] = (0, 2)
-		mass_spectrum.molecular_search_settings.usedAtoms['Na'] = (0, 1)
+		#mass_spectrum.molecular_search_settings.usedAtoms['Na'] = (0, 1)
 
 		mass_spectrum.molecular_search_settings.isProtonated = True
 		mass_spectrum.molecular_search_settings.isRadical = False
@@ -87,14 +57,15 @@ def assign_formula(file, times, interval, error, ref):
                                                                         'D': 1,
                                                                         'O': 2,
                                                                         'N': 3,
-                                                                        'S': 2
+                                                                        'S': 2,
+																		'Na': 1
                                                                         }
-		
+        '''	
 		SearchMolecularFormulas(mass_spectrum, first_hit=True).run_worker_mass_spectrum()
 		mass_spectrum.percentile_assigned(report_error=True)
 		
 		assignments=mass_spectrum.to_dataframe()
-		assignments['Time']=timestart
+		assignments['Time']=t1
 		results.append(assignments)
 		
 	results=pd.concat(results,ignore_index=True)
@@ -137,41 +108,90 @@ def rt_assign_plot(LCMS_annotations,filename):
 
 
 # Define CoreMS LCMS functions
-def run_assignment(time_min,time_max,interval,data_dir,file,refmasslist,error):
-	times = list(range(time_min,time_max,interval))
+def run_assignment(data_dir,file,refmasslist,error):
 
-	output=assign_formula(file, times, interval, error, refmasslist)
-	fname = file.replace('.raw','')
-	output.to_csv(data_dir+fname+'.csv')
+    #set time intervals
+    interval = 2
+    time_min = 0
+    time_max = 24
+	
+    times = list(range(time_min,time_max,interval))
+    times.append(time_max)
+	
+	# peak picking
+    MSParameters.mass_spectrum.min_picking_mz=50	# integer, minimum m/z that will be assigned
+    MSParameters.mass_spectrum.max_picking_mz=800 # integer, maximum m/z that will be assigned
+    MSParameters.mass_spectrum.noise_threshold_method = 'log'
+    MSParameters.mass_spectrum.noise_threshold_log_nsigma = 10 # integer, should be ~7-10 for most cases (lower will keep more noise)
+    MSParameters.mass_spectrum.noise_threshold_log_nsigma_bins = 500 # integer, should be kept around 500
+    MSParameters.ms_peak.peak_min_prominence_percent = 0.02 # relative intensity of lowest vs highest peak in spectrum. Keep around 0.01 to 0.1 . 
+    MSParameters.ms_peak.legacy_resolving_power = False
 
-	#errorplot(output,data_dir+fname+'_errorplot.jpg')
-	#rt_assign_plot(output,data_dir+fname+'_rt_assign_plot.jpg')
+	# assigment error and scoring
+    MSParameters.molecular_search.url_database = 'postgresql+psycopg2://coremsappdb:coremsapppnnl@corems-molformdb-1:5432/coremsapp'
+    MSParameters.molecular_search.db_chunk_size = 500
+    MSParameters.molecular_search.min_ppm_error = -1.5 # acceptable post-calibration minimum mass error for assigments (orbitraps, window should be 1-2ppm)
+    MSParameters.molecular_search.max_ppm_error = 1.5 # acceptable post-calibration maximum mass error for assigments (orbitraps, window should be 1-2ppm)
+    MSParameters.molecular_search.mz_error_score_weight: float = 0.6
+    MSParameters.molecular_search.isotopologue_score_weight: float = 0.4
+    MSParameters.molecular_search.score_method = "prob_score"
+    MSParameters.molecular_search.output_score_method = "prob_score"
+	
+    # molecular search space
+    MSParameters.molecular_search.min_dbe=0
+    MSParameters.molecular_search.max_dbe = 20
+    MSParameters.molecular_search.usedAtoms['C'] = (1, 40)
+    MSParameters.molecular_search.usedAtoms['H'] = (4, 80)
+    MSParameters.molecular_search.usedAtoms['O'] = (0, 16)
+    MSParameters.molecular_search.usedAtoms['N'] = (0, 8)
+    MSParameters.molecular_search.usedAtoms['S'] = (0, 2)
+    MSParameters.molecular_search.usedAtoms['Na'] = (0, 1)
+
+    MSParameters.molecular_search.isProtonated = True
+    MSParameters.molecular_search.isRadical = False
+    MSParameters.molecular_search.isAdduct = False
+    MSParameters.molecular_search.used_atom_valences = {'C': 4,
+                                                        '13C': 4,
+                                                        'H': 1,
+                                                        'D': 1,
+                                                        'O': 2,
+                                                        'N': 3,
+                                                        'S': 2,
+														'Na': 1
+                                                        }
+	# calibration
+    MSParameters.mass_spectrum.calib_pol_order = 2
+    MSParameters.mass_spectrum.calib_sn_threshold = 10
+    MSParameters.mass_spectrum.min_calib_ppm_error = error-3 # minimum ppm error for detecting m/z calibrant peaks
+    MSParameters.mass_spectrum.max_calib_ppm_error = error+3 # maximum ppm error for detecting m/z calibrant peaks
+	
+    output=assign_formula(file, times, refmasslist=refmasslist)
+    fname = file.replace('.raw','')
+    output.to_csv(data_dir+fname+'.csv')
+
+    errorplot(output,data_dir+fname+'_errorplot.jpg')
+    #rt_assign_plot(output,data_dir+fname+'_rt_assign_plot.jpg')
 
 
 if __name__ == '__main__':
 
-    data_dir = 'C:/Users/15087/Desktop/CoreMS/BATS Data/'
-    refmasslist = "calibrants.ref"
-    samplelist_file = "BATS_samplelist.csv"
-    
-    samplelist=pd.read_csv(data_dir+samplelist_file)
-
-    results = []
-
-    interval = 2
-    time_min = 10
-    time_max = 14
-
+    data_dir = 'C:/Users/15087/Desktop/Coremsdev/PT Cocultures/'
+    refmasslist = "siloxanes_orbitrap_pos.ref"
+    samplelist_file = "Coculture_samplelist.csv"
+    	
     os.chdir(data_dir)
-    samplelist=pd.read_csv(data_dir+samplelist_file)
+    samplelist=pd.read_csv(samplelist_file)
 	
     #Run first file alone to ensure that the docker database is generated.
-    run_assignment(time_min,time_max,interval,data_dir,samplelist.loc[0,'File'],refmasslist,samplelist.loc[0,'m/z error (ppm)'])
+    run_assignment(data_dir,samplelist.loc[0,'File'],refmasslist,samplelist.loc[0,'m/z error (ppm)'])
+
+    #Run the rest of the files iteratively. 
 
     args=[]
     for index, row in samplelist.iloc[1:].iterrows():
-        file=row.loc['File'] 
-        error=row.loc['m/z error (ppm)']
-        args.append((time_min,time_max,interval,data_dir,file,refmasslist,error))
+        file = row.loc['File']
+        error = row.loc['m/z error (ppm)']
+        #refmasslist = file.split('.')[0] +'_'+ "calibrants.ref" 
+        args.append((data_dir,file,refmasslist,error))
     with mp.Pool(processes=4) as pool:
-        results = pool.starmap(run_assignment, args)
+        pool.starmap(run_assignment, args)

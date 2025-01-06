@@ -1,6 +1,7 @@
 from pandas import unique, concat
 from numpy import array, zeros, shape, where, log10, log, sqrt
 from tqdm import tqdm
+import re
 
 class Consolidate:
     
@@ -9,6 +10,7 @@ class Consolidate:
         features_df['consolidated'] = 0
         features_df['consolidated flag'] = 0
         features_df['consolidated id'] = 0
+        features_df['replacement pair'] = 0
 
         if consolidation_width == "2sigma":
             factor = 1 / (sqrt(2 * log(2)))
@@ -34,8 +36,8 @@ class Consolidate:
                 mass = row['Calibrated m/z']
                 time = row['Time']
 
-                dm = factor * (1 / resolution)
-                mrange = [mass * (1 - dm), mass * (1 + dm)]
+                dm = factor * (mass / resolution)
+                mrange = [mass - dm, mass + dm]
 
                 matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
                 
@@ -50,12 +52,19 @@ class Consolidate:
                     features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
                     if consolidate_var == 'm/z Error (ppm)':
                         sub = matches.loc[abs(matches[consolidate_var]) > min(abs(matches[consolidate_var])), 'consolidated flag']
+                        main = matches.loc[matches[consolidate_var] == min(abs(matches[consolidate_var])),'Molecular Formula'].values[0]
                     elif consolidate_var == 'mz error flag':
                         sub = matches.loc[matches[consolidate_var] > min(matches[consolidate_var]), 'consolidated flag']
+                        main = matches.loc[matches[consolidate_var] == min(matches[consolidate_var]),'Molecular Formula'].values[0]
                     else:
                         sub = matches.loc[matches[consolidate_var] < max(matches[consolidate_var]), 'consolidated flag']
+                        main = matches.loc[matches[consolidate_var] == max(matches[consolidate_var]),'Molecular Formula'].values[0]
+
+                    matches['replacement pair']=matches['Molecular Formula'].apply(lambda row:compare_molecules(row,main))
+
                     features_df.loc[sub.index, 'consolidated flag'] = 1
-        
+                    features_df.loc[matches.index,'replacement pair'] = matches['replacement pair']
+
         return features_df 
     
 
@@ -231,3 +240,51 @@ class Consolidate:
             holder.append(time_step_df)
         return concat(holder)
         
+
+def compare_molecules(a, b):
+  """
+  Compares two molecular formulas to find common and unique elements.
+
+  Args:
+    a: The first molecular formula string.
+    b: The second molecular formula string.
+
+  Returns:
+    A tuple containing:
+      - core_elements: A dictionary of elements common to both molecules.
+      - residual_a: A dictionary of elements unique to molecule a.
+      - residual_b: A dictionary of elements unique to molecule b.
+  """
+  #Extracts the elements and their counts from a molecular formula string.
+  elements_a = {}
+  for match in re.findall(r"(\d*[A-Z][a-z]*)(\d*)", a):
+    element = match[0]
+    count = int(match[1]) if match[1] else 1
+    elements_a[element] = elements_a.get(element, 0) + count
+
+  elements_b = {}
+  for match in re.findall(r"(\d*[A-Z][a-z]*)(\d*)", b):
+    element = match[0]
+    count = int(match[1]) if match[1] else 1
+    elements_b[element] = elements_b.get(element, 0) + count
+
+  core_elements = {}
+  residual_a = {}
+  residual_b = {}
+
+  for element, count_a in elements_a.items():
+    if element in elements_b:
+      core_elements[element] = min(count_a, elements_b[element])
+      if count_a > elements_b[element]:
+        residual_a[element] = count_a - elements_b[element]
+    else:
+      residual_a[element] = count_a
+
+  for element, count_b in elements_b.items():
+    if element in elements_a:
+      if count_b > elements_a[element]:
+        residual_b[element] = count_b - elements_a[element]
+    else:
+      residual_b[element] = count_b
+
+  return [residual_a, residual_b]
