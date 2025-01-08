@@ -148,14 +148,14 @@ class Features:
                             (self.feature_list_df['P/C']<0.3) & 
                             (self.feature_list_df['O']>=3) &
                             (self.feature_list_df['N']>=1)
-                            ,'Stoichiometric classification'] = 'A-Sugars'
+                            ,'Stoichiometric classification'] = 'A-Sugar'
 
         self.feature_list_df.loc[(self.feature_list_df['O/C']>=0.8) & 
                             (self.feature_list_df['H/C']>=1.65) & 
                             (self.feature_list_df['H/C']<2.7) &
                             (self.feature_list_df['O']>=3) &
                             (self.feature_list_df['N']==0)
-                            ,'Stoichiometric classification'] = 'Carbohydrates'
+                            ,'Stoichiometric classification'] = 'Carbohydrate'
 
         self.feature_list_df.loc[(self.feature_list_df['O/C']>=0.5) & 
                             (self.feature_list_df['O/C']<1.7) & 
@@ -168,13 +168,13 @@ class Features:
                             (self.feature_list_df['S']==0) &
                             (self.feature_list_df['Calculated m/z']>305) &
                             (self.feature_list_df['Calculated m/z']<523)
-                            ,'Stoichiometric classification'] = 'Nucleotides'
+                            ,'Stoichiometric classification'] = 'Nucleotide'
 
         self.feature_list_df.loc[(self.feature_list_df['O/C']<=1.15) & 
                             (self.feature_list_df['H/C']<1.32) & 
                             (self.feature_list_df['N/C']<0.126) &
                             (self.feature_list_df['P/C']<=0.2) 
-                            ,'Stoichiometric classification'] = 'Phytochemicals'
+                            ,'Stoichiometric classification'] = 'Phytochemical'
 
         self.feature_list_df.loc[(self.feature_list_df['S']>0)
                             ,'Stoichiometric classification'] = 'Organosulfur'
@@ -187,7 +187,7 @@ class Features:
                             (self.feature_list_df['N/C']<=0.7) & 
                             (self.feature_list_df['P/C']<0.17) & 
                             (self.feature_list_df['N']>=1)
-                            ,'Stoichiometric classification'] = 'Protein'
+                            ,'Stoichiometric classification'] = 'Peptide'
 
         self.feature_list_df.loc[(self.feature_list_df['O/C']>0.6) & 
                             (self.feature_list_df['O/C']<=1) & 
@@ -197,7 +197,7 @@ class Features:
                             (self.feature_list_df['N/C']<=0.7) & 
                             (self.feature_list_df['P/C']<0.17) & 
                             (self.feature_list_df['N']>=1)
-                            ,'Stoichiometric classification'] = 'Protein'
+                            ,'Stoichiometric classification'] = 'Peptide'
 
         self.feature_list_df.loc[(self.feature_list_df['Is Isotopologue']>0),'Stoichiometric classification']='Isotoplogue'
         for col in cols_to_remove:

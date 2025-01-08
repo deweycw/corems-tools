@@ -4,7 +4,9 @@ __version__ = "0.0.2"
 
 from pandas import read_csv
 from pandas import DataFrame
+from pandas import Series
 import os
+import numpy as np
 
 from coremstools.FeatureList import Features
 from coremstools.Parameters import Settings
@@ -58,7 +60,11 @@ class DataSet(Features):
             print(f"File '{self.path_to_sample_list}' not found. Creating...")
             self.create_samplelist()
 
-        self.sample_list = read_csv(self.path_to_sample_list, index_col = None)
+        if not os.path.exists(self.path_to_sample_list):
+            print(f"File '{self.path_to_sample_list}' not found. Creating...")
+            self.create_samplelist()
+
+        return read_csv(self.path_to_sample_list, index_col = None)
 
     def assign_mol_class(self):
         '''
@@ -83,6 +89,17 @@ class DataSet(Features):
         
         print('Sample list saved to assignments directory, with pass/fail columns')
         self.sample_list.to_csv(self.path_to_sample_list, index =False)
+
+
+    def run_tic_plot(self):
+        '''
+        Method to generate TIC plots for all samples in dataset.
+        '''
+
+        QualityControl.tic_plot(self, self.sample_list)
+
+        
+
 
     def _check_for_molclass(self, assignments, fpath):
 
@@ -234,3 +251,51 @@ class DataSet(Features):
         df=DataFrame({'File': raw_files})
         print(df)
         df.to_csv(self.path_to_sample_list, index=False)
+
+    def summary(self,decimals=4,differences=True):
+            """
+            Creates a pandas DataFrame summarizing all assigments 
+
+            Args:
+            data_dir: The directory to search for files.
+            filename: the name of the sample list
+
+            Returns:
+            Saves as a csv a pandas DataFrame with a 'File' column containing the names of all '.raw' files.
+            """
+            files=[]
+            totalpeaks=[]
+            assignedpeaks=[]
+            assignedpeaks_percent=[]
+            assignedintensity_percent=[]
+            differences=[]
+            for f in self.sample_list['File']:
+                df = read_csv(Settings.assignments_directory + f.replace('.raw','.csv'))
+                files.append(f)
+                totalpeaks.append(len(df))
+                df_assigned=df[df['Molecular Formula'].notnull()]
+                df_unassigned=df[df['Molecular Formula'].isnull()]
+                assignedpeaks.append(len(df_assigned))
+                assignedpeaks_percent.append(len(df_assigned)/len(df)*100)
+                assignedintensity_percent.append(sum(df_assigned['Peak Height'])/sum(df['Peak Height'])*100)
+
+                # Extract the column as a numpy array
+                values = df_unassigned['Calibrated m/z'].values
+                # Calculate all pairwise differences
+                differences.append(np.round(np.subtract.outer(values, values), decimals).flatten())
+
+            summary=DataFrame({'Files': files, 
+                            'Total peaks':totalpeaks,
+                            'Assigned peaks':assignedpeaks,
+                            'Assigned peak percent':assignedpeaks_percent,
+                            'Assigned intensity percent':assignedintensity_percent
+                            })
+            
+            summary.to_csv(Settings.assignments_directory+'summary.csv', index=False)
+
+            if(differences):
+                # Count occurrences of each difference
+                unique_diffs, counts = np.unique(np.abs(np.concatenate(differences)), return_counts=True)
+
+                diff_counts = DataFrame({'m/z diff':unique_diffs, 'counts':counts}).sort_values(ascending=False, by='counts')
+                diff_counts.head(200).to_csv(Settings.assignments_directory+'unassigned.csv', index=False)
