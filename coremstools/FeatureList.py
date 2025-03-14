@@ -4,6 +4,7 @@
 from coremstools.Align import Align
 from coremstools.Consolidate import Consolidate 
 from coremstools.Parameters import Settings
+import numpy as np
 
 class Features:
     """
@@ -53,27 +54,59 @@ class Features:
             self.run_alignment(include_dispersity)
             self.feature_list_df = Consolidate.run(self, self.feature_list_df)
                 
-    def flag_errors(self):
+    def flag_errors(self, n_iter=3):
 
         '''
+
         Method that (1) calculates a rolling average of the assignment error, from lowest to highest calculated m/z, for each feature in the feature list, and (2) calculates an error flag, which is the absolute value of the difference of the rolling average error and the average error of the individual feature divided by 4 times the standard deviation of the m/z error for the feature. '''
 
         self.feature_list_df.sort_values(by=['Calculated m/z'], inplace=True)
 
-        self.feature_list_df['rolling error'] = self.feature_list_df['m/z Error (ppm)'].rolling(int(len(self.feature_list_df)/50), center=True, min_periods=0).mean()
+        if 'consolidated flag' in self.feature_list_df.columns:
+            self.feature_list_df['rolling error'] = self.feature_list_df[self.feature_list_df['consolidated flag'] == 0]['m/z Error (ppm)'].rolling(window=int(len(self.feature_list_df)/50), center=True, min_periods=0).mean()
+            self.feature_list_df['rolling error'].interpolate(method='linear', inplace=True)
+
+        else:
+            self.feature_list_df['rolling error'] = self.feature_list_df['m/z Error (ppm)'].rolling(window=int(len(self.feature_list_df)/50), center=True, min_periods=0).mean()
 
         self.feature_list_df['mz error flag'] = abs(self.feature_list_df['rolling error'] - self.feature_list_df['m/z Error (ppm)']) / (4*self.feature_list_df['m/z Error (ppm)_se'])
 
+        if n_iter>1:
+            for i in range(n_iter-1):
+                self.feature_list_df['rolling error'] = np.nan
+                if 'consolidated flag' in self.feature_list_df.columns:
+                    self.feature_list_df['rolling error'] = self.feature_list_df[(self.feature_list_df['consolidated flag'] == 0) & (self.feature_list_df['mz error flag']<1)]['m/z Error (ppm)'].rolling(window=int(len(self.feature_list_df)/50), center=True, min_periods=0).mean()
+                    self.feature_list_df['rolling error'].interpolate(method='linear', inplace=True)
+
+                else:
+                    self.feature_list_df['rolling error'] = self.feature_list_df[self.feature_list_df['mz error flag']<1]['m/z Error (ppm)'].rolling(window=int(len(self.feature_list_df)/50), center=True, min_periods=0).mean()
+
+                #self.feature_list_df['mz error flag'] = abs(self.feature_list_df['rolling error'] - self.feature_list_df['m/z Error (ppm)']) / (4*self.feature_list_df['m/z Error (ppm)_se']*np.sqrt(self.feature_list_df['N Samples']))
+                self.feature_list_df['mz error flag'] = abs(self.feature_list_df['rolling error'] - self.feature_list_df['m/z Error (ppm)']) / (4*self.feature_list_df['m/z Error (ppm)_se'])
+
+
         
     def flag_blank_features(self):
+        """
+        This function calculates and adds to a feature the following columns:
+            'Max Intensity': The maximum signal intensity observed across all samples
+            'Max Blank': The maximum signal intensity observed across blank files.
+            'Blank' column based on the max intensity of a specific set of blank file compared to the maximum intensity in each feature's spectrum.
 
-        print('flagging blank features')
+        Args:
+            self.feature_list_df: A pandas DataFrame containing the aligned features with intensity columns prefixed with 'Intensity:'.
+            Settings.blank_sample_list: A list of the filename of the blank data file.
+
+
+        """
+
+        print('Flagging blank features')
 
         if self.feature_list_df is None:
 
             self.run_alignment()
 
-        col = None
+        blank_col = []
 
         for blank_sample in Settings.blank_sample_list:
 
@@ -81,14 +114,21 @@ class Features:
             
                 blank_sample = blank_sample.split('.')[0]
 
+
             for col in self.feature_list_df.columns:
                 
                 if blank_sample in col:
 
-                    blank_sample_col = col
+                    blank_col.append(col)
 
-            self.feature_list_df['Max Intensity'] = self.feature_list_df.filter(regex='Intensity').max(axis=1)
-            self.feature_list_df['blank'] = self.feature_list_df[blank_sample_col].fillna(0) / self.feature_list_df['Max Intensity']
+        print(blank_col)
+
+        
+        #blank_col = ["Intensity:" + item for item in Settings.blank_sample_list]
+        self.feature_list_df['Max Intensity']=self.feature_list_df.filter(regex='Intensity').max(axis=1)
+        self.feature_list_df['Max Blank']=self.feature_list_df[blank_col].max(axis=1)
+        self.feature_list_df['blank']=self.feature_list_df['Max Blank']/self.feature_list_df['Max Intensity']
+
 
 
     def stoichiometric_classification(self):
