@@ -31,7 +31,6 @@ class Features:
     def __init__(self, sample_list):
         
         self.feature_list_df = None
-        print('feature list init func')
         self.sample_list = sample_list
 
     def run_alignment(self, include_dispersity, experimental):
@@ -53,15 +52,16 @@ class Features:
         else:
             self.run_alignment(include_dispersity)
             self.feature_list_df = Consolidate.run(self, self.feature_list_df)
-                
+        
+
     def flag_errors(self, n_iter=3):
 
         '''
+        Method that (1) calculates a rolling average of the assignment error, from lowest to highest calculated m/z, for each feature in the feature list, and (2) calculates an error flag, which is the absolute value of the difference of the rolling average error and the average error of the individual feature divided by 4 times the standard deviation of the m/z error for the feature. 
+        '''
+        print('Running holistic m/z error filter...')
 
-        Method that (1) calculates a rolling average of the assignment error, from lowest to highest calculated m/z, for each feature in the feature list, and (2) calculates an error flag, which is the absolute value of the difference of the rolling average error and the average error of the individual feature divided by 4 times the standard deviation of the m/z error for the feature. '''
-
-        self.feature_list_df.sort_values(by=['Calculated m/z'], inplace=True)
-
+        self.feature_list_df = self.feature_list_df.sort_values(by=['Calculated m/z'])
         if 'consolidated flag' in self.feature_list_df.columns:
             self.feature_list_df['rolling error'] = self.feature_list_df[self.feature_list_df['consolidated flag'] == 0]['m/z Error (ppm)'].rolling(window=int(len(self.feature_list_df)/50), center=True, min_periods=0).mean()
             self.feature_list_df['rolling error'].interpolate(method='linear', inplace=True)
@@ -85,7 +85,6 @@ class Features:
                 self.feature_list_df['mz error flag'] = abs(self.feature_list_df['rolling error'] - self.feature_list_df['m/z Error (ppm)']) / (4*self.feature_list_df['m/z Error (ppm)_se'])
 
 
-        
     def flag_blank_features(self):
         """
         This function calculates and adds to a feature the following columns:
@@ -100,7 +99,7 @@ class Features:
 
         """
 
-        print('Flagging blank features')
+        print('Flagging blank features...')
 
         if self.feature_list_df is None:
 
@@ -121,8 +120,6 @@ class Features:
 
                     blank_col.append(col)
 
-        print(blank_col)
-
         
         #blank_col = ["Intensity:" + item for item in Settings.blank_sample_list]
         self.feature_list_df['Max Intensity']=self.feature_list_df.filter(regex='Intensity').max(axis=1)
@@ -133,7 +130,7 @@ class Features:
 
     def stoichiometric_classification(self):
 
-        print('determining stoichiometric classifications...')
+        print('Determining stoichiometric classifications...')
 
         self.feature_list_df['Stoichiometric classification']='Unclassified'
 

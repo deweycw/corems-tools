@@ -66,7 +66,7 @@ class Align:
                     'Isotopologue Similarity',
                     'S/N']
 
-        print('running alignment on ...')
+        print('Running alignment on ...')
                 
         elements=[]
 

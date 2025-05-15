@@ -98,8 +98,6 @@ class DataSet(Features):
 
         QualityControl.tic_plot(self, self.sample_list)
 
-        
-
 
     def _check_for_molclass(self, assignments, fpath):
 
@@ -118,11 +116,11 @@ class DataSet(Features):
             Specifies number of molecular classes to explicitly represent in error plots. If set to -1, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented.
         '''
 
-        print('\nplotting m/z error plots for ...')   
+        print('\nPlotting m/z error plots for ...')   
         for f in self.sample_list['File']:
             print('  '+ f)
             fpath = Settings.assignments_directory + f.split('.')[0] + '.csv'
-            save_file = fpath.split('.')[0] + '_mz-error.jpg'
+            save_file = Settings.assignments_directory + f.split('.')[0] + '_mz-error.jpg'
 
             assignments = read_csv(fpath)
 
@@ -140,7 +138,7 @@ class DataSet(Features):
         n_molclass : int
             Specifies number of molecular classes to explicitly represent in plots. If set to -1, all molecular classes will be explicitly represented. If set to a value greater than 0, the first n_molclass molecular classes, sorted from most abundant to least abundant, will be explicitly represented. m/z with other molecular classes will be represented as 'Other'. Unassigned m/z are always represented. 
         '''
-        print('\nplotting molecular classes v. retention time for ...')   
+        print('\nPlotting molecular classes v. retention time for ...')   
         for f in self.sample_list['File']:
             print('  '+ f)
             fpath = Settings.assignments_directory + f.split('.')[0]+ '.csv'
@@ -149,7 +147,7 @@ class DataSet(Features):
 
             self._check_for_molclass(assignments, fpath)
 
-            save_file = fpath.split('.')[0] + '_rt-mc.jpg'
+            save_file = Settings.assignments_directory + f.split('.')[0]+ '_rt-mc.jpg'
             MolClassRetention.RTAssignPlot(self, assignments, save_file, n_molclass)
 
 
@@ -158,7 +156,7 @@ class DataSet(Features):
         Method to runs dispersity calculation on each m/z in the CoreMS assignment file corresponding to each sample. The CoreMS assignment files are copied and saved as [SAMPLE_NAME] + '.csv' in the directory defined by Settings.assignments_directory. Currently quite slow. Would be good to do this calculation after the feature list is assembled.
         '''
 
-        print('\nrunning dispersity calculation on ...')
+        print('\nRunning dispersity calculation on ...')
 
         for f in self.sample_list['File']:
             print('  ' + f)
@@ -166,7 +164,6 @@ class DataSet(Features):
             Dispersity.CalculateDispersity(Settings.assignments_directory +  fcsv)
 
     def _check_for_feature_list(self):
-
         if self.feature_list == None:
             self.feature_list = Features(self.sample_list)
             try:
@@ -201,7 +198,7 @@ class DataSet(Features):
         self.feature_list.run_consolidation(gapfill_variable, include_dispersity)
 
 
-    def calc_rolling_error(self):
+    def run_holistic_mz_error_filter(self):
         '''
         Method to calculate rolling error and filter outliers
         '''
