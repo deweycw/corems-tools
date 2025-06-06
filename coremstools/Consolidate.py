@@ -5,8 +5,11 @@ import re
 
 class Consolidate:
     
-    def run(self, consolidate_var, features_df, consolidation_width = "2sigma"):
-        
+    def run(self, consolidate_var, features_df, consolidation_width = "2sigma",min_samples=1):
+        print('testing consolidation')
+        print(consolidate_var)
+        print(consolidation_width)
+        print(min_samples)
         features_df['consolidated'] = 0
         features_df['consolidated flag'] = 0
         features_df['consolidated id'] = 0
@@ -50,24 +53,32 @@ class Consolidate:
                     matches_sum = matches.filter(regex='Intensity').sum(axis=0)
 
                     features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
-                    if consolidate_var == 'm/z Error (ppm)':
-                        sub = matches.loc[abs(matches[consolidate_var]) > min(abs(matches[consolidate_var])), 'consolidated flag']
-                        main = matches.loc[matches[consolidate_var] == min(abs(matches[consolidate_var])),'Molecular Formula'].values[0]
-                    elif consolidate_var == 'mz error flag':
-                        sub = matches.loc[matches[consolidate_var] > min(matches[consolidate_var]), 'consolidated flag']
-                        main = matches.loc[matches[consolidate_var] == min(matches[consolidate_var]),'Molecular Formula'].values[0]
+                    
+                    matches_highn = matches[matches['N Samples'] >= min_samples]
+
+
+                    if (len(matches_highn.index) > 0):
+
+                        if consolidate_var == 'm/z Error (ppm)':
+                            sub = matches.loc[abs(matches[consolidate_var]) != min(abs(matches[consolidate_var])),'Molecular Formula']
+                            main = matches.loc[abs(matches[consolidate_var]) == min(abs(matches_highn[consolidate_var])),'Molecular Formula'].values[0]
+                        elif consolidate_var == 'mz error flag':
+                            main = matches.loc[matches[consolidate_var] != min(matches_highn[consolidate_var]),'Molecular Formula']
+                            main = matches.loc[matches[consolidate_var] == min(matches_highn[consolidate_var]),'Molecular Formula'].values[0]
+                        else:
+                            sub = matches.loc[matches[consolidate_var] != max(matches_highn[consolidate_var]), 'consolidated flag']
+                            main = matches.loc[matches[consolidate_var] == max(matches_highn[consolidate_var]),'Molecular Formula'].values[0]
+                            
+                        matches['replacement pair']=matches['Molecular Formula'].apply(lambda row:compare_molecules(row,main))
+
+                        features_df.loc[sub.index, 'consolidated flag'] = 1
+                        features_df.loc[matches.index,'replacement pair'] = matches['replacement pair']
+
                     else:
-                        sub = matches.loc[matches[consolidate_var] < max(matches[consolidate_var]), 'consolidated flag']
-                        main = matches.loc[matches[consolidate_var] == max(matches[consolidate_var]),'Molecular Formula'].values[0]
-
-                    matches['replacement pair']=matches['Molecular Formula'].apply(lambda row:compare_molecules(row,main))
-
-                    features_df.loc[sub.index, 'consolidated flag'] = 1
-                    features_df.loc[matches.index,'replacement pair'] = matches['replacement pair']
+                        features_df.loc[matches.index, 'consolidated flag'] = 1
 
         return features_df 
     
-
     def GapFill_experimental(self, features_ddf):
         
         features_ddf['gapfill'] = False

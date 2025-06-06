@@ -5,7 +5,7 @@ from coremstools.Align import Align
 from coremstools.Consolidate import Consolidate 
 from coremstools.Parameters import Settings
 import numpy as np
-
+import pandas as pd
 class Features:
     """
     Base class for holding CoreMS features across a dataset. 
@@ -27,31 +27,33 @@ class Features:
         Calculates a 'blank' flag based on the intensity of a specific blank file compared to the maximum intensity in each feature's spectrum.
     export()
         Writes feature list to .csv file. 
+    load_csv()
+        Loads feature list from .csv file.
     """
     def __init__(self, sample_list):
         
         self.feature_list_df = None
         self.sample_list = sample_list
 
-    def run_alignment(self, include_dispersity, experimental):
+    def run_alignment(self, experimental):
         
         if experimental:
         
-            self.feature_list_df = Align.Align_exp(self, self.sample_list, include_dispersity)
+            self.feature_list_df = Align.Align_exp(self, self.sample_list)
 
         else:
 
-            self.feature_list_df = Align.run(self, self.sample_list, include_dispersity)
+            self.feature_list_df = Align.run(self, self.sample_list)
 
 
-    def run_consolidation(self, gapfill_variable, include_dispersity):
+    def run_consolidation(self, consolidate_var, consolidation_width, min_samples):
 
         if self.feature_list_df is not None:         
-            self.feature_list_df = Consolidate.run(self, gapfill_variable, self.feature_list_df)
+            self.feature_list_df = Consolidate.run(self, consolidate_var, self.feature_list_df, consolidation_width, min_samples)
 
         else:
-            self.run_alignment(include_dispersity)
-            self.feature_list_df = Consolidate.run(self, self.feature_list_df)
+            self.run_alignment()
+            self.feature_list_df = Consolidate.run(self, consolidate_var, self.feature_list_df, consolidation_width, min_samples)
         
 
     def flag_errors(self, n_iter=3):
@@ -253,4 +255,17 @@ class Features:
         dir = '/home/christiandewey/Dropbox/'
         #dir = Settings.assignments_directory
         self.feature_list_df.to_parquet(dir + 'feature_list.parquet', compute =True)
-        
+
+    def load_csv(self, fname):
+        """
+        Loads a feature list from a .csv file.
+
+        Parameters
+        ----------
+        fname : str
+            The name of the .csv file to load.
+        """
+        print('Loading feature list from .csv...')
+        dir = Settings.assignments_directory
+        self.feature_list_df = pd.read_csv(dir + fname, low_memory=False)
+    

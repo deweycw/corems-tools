@@ -70,7 +70,7 @@ def assign_formula(file, time_min, time_max, interval, data_dir, error):
                                                                         'N': 3,
                                                                         'Si':4}
 
-        SearchMolecularFormulas(mass_spectrum, first_hit=True).run_worker_mass_spectrum()
+        SearchMolecularFormulas(mass_spectrum).run_worker_mass_spectrum()
         mass_spectrum.percentile_assigned(report_error=True)
 
         assignments=mass_spectrum.to_dataframe()

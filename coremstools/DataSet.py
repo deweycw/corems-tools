@@ -173,7 +173,7 @@ class DataSet(Features):
                 pass
         
 
-    def run_alignment(self, include_dispersity = True, experimental = False):
+    def run_alignment(self, experimental = False):
         """
         Method to assemble an aligned feature list for the dataset. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
@@ -187,15 +187,15 @@ class DataSet(Features):
         """
 
         self._check_for_feature_list()
-        self.feature_list.run_alignment(include_dispersity, experimental)
+        self.feature_list.run_alignment(experimental)
 
 
-    def run_consolidation(self, gapfill_variable = 'Confidence Score', include_dispersity = True):
+    def run_consolidation(self, consolidate_var = 'Confidence Score', consolidation_width = "2sigma",min_samples=1):
         '''
         Method to perform consolidation of features across dataset.
         '''        
         self._check_for_feature_list()
-        self.feature_list.run_consolidation(gapfill_variable, include_dispersity)
+        self.feature_list.run_consolidation(consolidate_var, consolidation_width, min_samples)
 
 
     def run_holistic_mz_error_filter(self):
@@ -296,3 +296,11 @@ class DataSet(Features):
 
                 diff_counts = DataFrame({'m/z diff':unique_diffs, 'counts':counts}).sort_values(ascending=False, by='counts')
                 diff_counts.head(200).to_csv(Settings.assignments_directory+'unassigned.csv', index=False)
+
+    def load_feature_list(self, fname = 'feature_list.csv'):
+        """
+        Method to load feature list from .csv file. The file should be in the directory defined in Parameters.Settings.assignments_directory.
+        """
+        self.feature_list = Features(self.sample_list)
+        self.feature_list.load_csv(fname)
+        self.feature_list_df = self.feature_list.feature_list_df

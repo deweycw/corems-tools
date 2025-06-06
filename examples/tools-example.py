@@ -31,6 +31,8 @@ if __name__ == '__main__':
 
     dset.flag_blank_features()
 
+    dset.run_holistic_mz_error_filter()
+
     dset.export_feature_list()
 
     
