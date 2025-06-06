@@ -27,14 +27,23 @@ class Settings:
         Min and max time range in which to look for standard; first element of list is min, second element is max
     blank_sample_list : list
         List of blank file names (strings)
+    alignment_legacy : bool
+        If False (preferred default), uses new alignment method based on concatenated Pandas DataFrame.
+        If True, uses legacy alignment method based on dictionary; 
+    consolidation_width : str
+        Width of the Gaussian used for consolidation, can be "2sigma", "1sigma", or 'fwhm'.
+    consolidation_min_samples : int
+        Minimum number of samples required to keep a feature in the feature list during consolidation.
     """
 
     raw_file_directory: str = ''
     assignments_directory: str = ''
     eic_tolerance: float = 5.0 # ppm 
     internal_std_mz: float = 678.2915 # defaults to mass of [cyanocobalamin]2+
-    sample_list: str = '' #  
+    sample_list: str = '' 
     time_interval = 2
     std_time_range = [0,20]
     blank_sample_list = []
-    
+    alignment_legacy: bool = False
+    consolidation_width: str = "2sigma" # "2sigma", "1sigma", or 'fwhm'
+    consolidation_min_samples: int = 1 

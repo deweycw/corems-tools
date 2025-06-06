@@ -1,80 +1,124 @@
 from pandas import unique, concat
 from numpy import array, zeros, shape, where, log10, log, sqrt
 from tqdm import tqdm
+from coremstools.Parameters import Settings
 import re
 
 class Consolidate:
-    
-    def run(self, consolidate_var, features_df, consolidation_width = "2sigma",min_samples=1):
-        print('testing consolidation')
-        print(consolidate_var)
-        print(consolidation_width)
-        print(min_samples)
+
+    def run(self, consolidate_var, features_df):
+        """
+        Consolidates features in a DataFrame based on m/z, retention time, and a specified variable.
+        Features with indistinguishable m/z values at the same retention times are grouped.
+        Their intensities are summed, and a representative feature is chosen based on `consolidate_var`.
+        Other features in the group are flagged for removal.
+
+        Args:
+            consolidate_var (str): The column name to use for selecting the representative feature 
+                                   from a consolidated group (e.g., 'Confidence Score', 'm/z Error (ppm)').
+                                   'Confidence Score' is recommended for most cases.
+            features_df (pd.DataFrame): DataFrame containing the features to be consolidated.
+
+        Note:
+            The `consolidation_width` (e.g., "2sigma", "1sigma", "fwhm") and 
+            `min_samples` (minimum 'N Samples' for a primary candidate) parameters 
+            are taken from `coremstools.Parameters.Settings`.
+
+        Returns:
+            pd.DataFrame: The DataFrame with added/updated columns:
+                          - 'consolidated': (int) 1 if part of a consolidated group, 0 otherwise.
+                          - 'consolidated flag': (int) 1 if the feature is *not* the chosen representative of its group, 0 if it is.
+                          - 'consolidated id': (int) A unique identifier for each consolidated group.
+                          - 'replacement pair': (list) For consolidated features, shows the elemental difference from the representative.
+        """
+        consolidation_width=Settings.consolidation_width 
+        min_samples=Settings.consolidation_min_samples
+        
+        # Initialize new columns in the features DataFrame
         features_df['consolidated'] = 0
         features_df['consolidated flag'] = 0
         features_df['consolidated id'] = 0
         features_df['replacement pair'] = 0
 
+        # Determine the factor for calculating m/z range based on consolidation_width
+        # This factor relates the mass resolution to the m/z window (dm)
         if consolidation_width == "2sigma":
-            factor = 1 / (sqrt(2 * log(2)))
+            factor = 1 / (sqrt(2 * log(2)))  # Corresponds to ~ +/- 2 standard deviations of a Gaussian peak
         elif consolidation_width == "1sigma":
-            factor = 1 / (2 * sqrt(2 * log(2)))
+            factor = 1 / (2 * sqrt(2 * log(2))) # Corresponds to ~ +/- 1 standard deviation
         elif consolidation_width == "fwhm":
-            factor = 1 / 2
+            factor = 1 / 2 # Corresponds to Full Width at Half Maximum
 
+        # Identify intensity columns (typically prefixed with 'Intensity')
         intensity_cols = list(features_df.filter(regex='Intensity').columns)
 
         print('running consolidation...')        
         pbar = tqdm(range(len(features_df.index)))
         
-        gf_id = 1
+        gf_id = 1 # Initialize a unique ID for each consolidated group
 
         for ix in pbar:
         
             row = features_df.iloc[ix]
-
+            
+            # Process the row only if it hasn't been assigned to a consolidated group yet
             if row['consolidated id'] == 0:
                 
                 resolution = row['Resolving Power'] 
                 mass = row['Calibrated m/z']
                 time = row['Time']
 
+                # Calculate the m/z delta (dm) based on mass, resolution, and the chosen factor
                 dm = factor * (mass / resolution)
+                # Define the m/z range for finding matching features
                 mrange = [mass - dm, mass + dm]
 
+                # Find features within the m/z range and at the same retention time
                 matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
                 
                 if(len(matches.index) > 1):
                     
+                    # Mark all matched features as consolidated and assign them the same group ID
                     features_df.loc[matches.index,'consolidated'] = 1
                     features_df.loc[matches.index, 'consolidated id'] = gf_id
                     gf_id = gf_id + 1
 
+                    # Sum the intensities of all matched features across all intensity columns
                     matches_sum = matches.filter(regex='Intensity').sum(axis=0)
 
+                    # Update the intensity columns for all matched features with the summed intensities
                     features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
                     
+                    # Filter matches to find those that meet the min_samples criteria
                     matches_highn = matches[matches['N Samples'] >= min_samples]
 
-
+                    # If there are features meeting the min_samples criteria
                     if (len(matches_highn.index) > 0):
 
+                        # Select the 'main' or representative feature based on the consolidate_var
                         if consolidate_var == 'm/z Error (ppm)':
+                            # For m/z error, the one with the minimum absolute error is 'main'
                             sub = matches.loc[abs(matches[consolidate_var]) != min(abs(matches[consolidate_var])),'Molecular Formula']
                             main = matches.loc[abs(matches[consolidate_var]) == min(abs(matches_highn[consolidate_var])),'Molecular Formula'].values[0]
                         elif consolidate_var == 'mz error flag':
+                            # For mz error flag, the one with the minimum flag value is 'main'
                             main = matches.loc[matches[consolidate_var] != min(matches_highn[consolidate_var]),'Molecular Formula']
                             main = matches.loc[matches[consolidate_var] == min(matches_highn[consolidate_var]),'Molecular Formula'].values[0]
                         else:
+                            # For other variables (e.g., Confidence Score), the one with the maximum value is 'main'
                             sub = matches.loc[matches[consolidate_var] != max(matches_highn[consolidate_var]), 'consolidated flag']
                             main = matches.loc[matches[consolidate_var] == max(matches_highn[consolidate_var]),'Molecular Formula'].values[0]
                             
+                        # Compare each matched molecule with the 'main' molecule to find differences
                         matches['replacement pair']=matches['Molecular Formula'].apply(lambda row:compare_molecules(row,main))
 
+                        # Flag features that are not the 'main' feature as consolidated (i.e., they will be replaced/represented by 'main')
                         features_df.loc[sub.index, 'consolidated flag'] = 1
+                        # Store the comparison result (differences)
                         features_df.loc[matches.index,'replacement pair'] = matches['replacement pair']
 
                     else:
+                        # If no features meet the min_samples criteria, flag all matched features
                         features_df.loc[matches.index, 'consolidated flag'] = 1
 
         return features_df 
@@ -266,8 +310,9 @@ def compare_molecules(a, b):
       - residual_a: A dictionary of elements unique to molecule a.
       - residual_b: A dictionary of elements unique to molecule b.
   """
-  #Extracts the elements and their counts from a molecular formula string.
+  # Parse molecule 'a' to get element counts
   elements_a = {}
+  # Regex to find element (e.g., C, 13C, Cl) and its optional count
   for match in re.findall(r"(\d*[A-Z][a-z]*)(\d*)", a):
     element = match[0]
     count = int(match[1]) if match[1] else 1
@@ -283,6 +328,7 @@ def compare_molecules(a, b):
   residual_a = {}
   residual_b = {}
 
+  # Iterate through elements in molecule 'a'
   for element, count_a in elements_a.items():
     if element in elements_b:
       core_elements[element] = min(count_a, elements_b[element])
@@ -291,6 +337,7 @@ def compare_molecules(a, b):
     else:
       residual_a[element] = count_a
 
+  # Iterate through elements in molecule 'b'
   for element, count_b in elements_b.items():
     if element in elements_a:
       if count_b > elements_a[element]:

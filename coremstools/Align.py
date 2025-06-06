@@ -2,13 +2,10 @@ from numpy import mean, std, sqrt, nan
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
-#import dask.dataframe as dd
-#from dask.diagnostics import ProgressBar
-#ProgressBar().register()
 
 from coremstools.Parameters import Settings
 
-import re # Added re
+import re 
 
 class Align:
 
@@ -177,7 +174,7 @@ class Align:
         print('Alignment finished.')
         return final_df
     
-    def run_classic(self, sample_list, include_dispersity = True):
+    def run_legacy(self, sample_list, include_dispersity = True):
         """
         Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
