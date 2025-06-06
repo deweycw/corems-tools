@@ -1,6 +1,6 @@
 __author__ = "Christian Dewey & Rene Boiteau"
-__date__ = "2024 Dec 19"
-__version__ = "0.0.2"
+__date__ = "2025 June 05"
+__version__ = "0.0.3"
 
 from pandas import read_csv
 from pandas import DataFrame
@@ -32,9 +32,16 @@ class DataSet(Features):
     """
 
     def __init__(self, path_to_sample_list=None, sample_list=None):
-        
+        """
+        Initializes the DataSet object.
+
+        It prioritizes `sample_list` if both `path_to_sample_list` and 
+        `sample_list` are provided. If only `path_to_sample_list` is given, 
+        it attempts to load the sample list from the specified file. 
+        If the file doesn't exist, it attempts to create one by scanning 
+        the `Settings.raw_file_directory`.
+        """
         self.path_to_sample_list = path_to_sample_list  
-        #self.sample_list = sample_list
 
         self.time_interval = Settings.time_interval
         self.feature_list = None
@@ -55,7 +62,16 @@ class DataSet(Features):
     
 
     def _initialize_from_sample_list_file(self):
+        """
+        Loads the sample list from the CSV file specified by `self.path_to_sample_list`.
+        If the file does not exist, it attempts to create a new sample list by
+        scanning the directory defined in `Settings.raw_file_directory`.
 
+        Returns
+        -------
+        pd.DataFrame
+            The loaded or newly created sample list DataFrame.
+        """
         if not os.path.exists(self.path_to_sample_list):
             print(f"File '{self.path_to_sample_list}' not found. Creating...")
             self.create_samplelist()
@@ -173,7 +189,7 @@ class DataSet(Features):
                 pass
         
 
-    def run_alignment(self, include_dispersity = True, experimental = False):
+    def run_alignment(self):
         """
         Method to assemble an aligned feature list for the dataset. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
@@ -187,15 +203,20 @@ class DataSet(Features):
         """
 
         self._check_for_feature_list()
-        self.feature_list.run_alignment(include_dispersity, experimental)
+        self.feature_list.run_alignment()
 
 
-    def run_consolidation(self, gapfill_variable = 'Confidence Score', include_dispersity = True):
+    def run_consolidation(self, consolidate_var = 'Confidence Score'):
         '''
         Method to perform consolidation of features across dataset.
+
+        Parameters
+        ----------
+        consolidate_var : str
+            The variable to use for consolidation. Default is 'Confidence Score'. 
         '''        
         self._check_for_feature_list()
-        self.feature_list.run_consolidation(gapfill_variable, include_dispersity)
+        self.feature_list.run_consolidation(consolidate_var)
 
 
     def run_holistic_mz_error_filter(self):
@@ -224,7 +245,13 @@ class DataSet(Features):
 
     def export_feature_list(self, fname = 'feature_list.csv'):
         '''
-        Method to export feature list as .csv file. Will be exported to the directory defined in Parameters.Settings.assignments_directory.
+        Method to export feature list as .csv file. 
+        Will be exported to the directory defined in Parameters.Settings.assignments_directory.
+
+        Parameters
+        ----------
+        fname : str
+            The name of the file to save the feature list to. Default is 'feature_list.csv'.
         '''
         self._check_for_feature_list()
         self.feature_list.export_csv(fname)
@@ -233,14 +260,11 @@ class DataSet(Features):
     def create_samplelist(self):
         """
         Creates a pandas DataFrame listing all '.raw' files in a given directory.
-        Args:
-        data_dir: The directory to search for files.
-        filename: the name of the sample list
-
-        Returns:
-        Saves as a csv a pandas DataFrame with a 'File' column containing the names of all '.raw' files.
+        Creates a sample list CSV file by scanning for raw data files.
+        It looks for files with the extension defined in `self.filetype` (e.g., '.raw')
+        within the directory specified by `Settings.raw_file_directory`.
+        The created sample list CSV file is saved to the path stored in `self.path_to_sample_list`.
         """
-
         raw_files = []
         for filename in os.listdir(Settings.raw_file_directory):
             if filename.endswith(self.filetype):
@@ -250,49 +274,62 @@ class DataSet(Features):
         df.to_csv(self.path_to_sample_list, index=False)
 
     def summary(self,decimals=4,differences=True):
-            """
-            Creates a pandas DataFrame summarizing all assigments 
+        """
+        Generates a summary of assignments for each file in the dataset.
+        This includes total peaks, number and percentage of assigned peaks, 
+        and percentage of assigned intensity. 
+        Optionally, it can also analyze m/z differences among unassigned peaks.
+        Results are saved to 'summary.csv' and 'unassigned_mz_differences.csv' (if `differences` is True)
+        in the `Settings.assignments_directory`.
 
-            Args:
-            data_dir: The directory to search for files.
-            filename: the name of the sample list
+        Parameters
+        ----------
+        decimals : int, optional
+            Number of decimal places to round m/z differences to. Defaults to 4.
+        differences : bool, optional
+            If True, calculates and saves pairwise m/z differences for unassigned peaks. 
+            Defaults to True.
+        """
+        files=[]
+        totalpeaks=[]
+        assignedpeaks=[]
+        assignedpeaks_percent=[]
+        assignedintensity_percent=[]
+        differences=[]
+        for f in self.sample_list['File']:
+            df = read_csv(Settings.assignments_directory + f.replace('.raw','.csv'))
+            files.append(f)
+            totalpeaks.append(len(df))
+            df_assigned=df[df['Molecular Formula'].notnull()]
+            df_unassigned=df[df['Molecular Formula'].isnull()]
+            assignedpeaks.append(len(df_assigned))
+            assignedpeaks_percent.append(len(df_assigned)/len(df)*100)
+            assignedintensity_percent.append(sum(df_assigned['Peak Height'])/sum(df['Peak Height'])*100)
 
-            Returns:
-            Saves as a csv a pandas DataFrame with a 'File' column containing the names of all '.raw' files.
-            """
-            files=[]
-            totalpeaks=[]
-            assignedpeaks=[]
-            assignedpeaks_percent=[]
-            assignedintensity_percent=[]
-            differences=[]
-            for f in self.sample_list['File']:
-                df = read_csv(Settings.assignments_directory + f.replace('.raw','.csv'))
-                files.append(f)
-                totalpeaks.append(len(df))
-                df_assigned=df[df['Molecular Formula'].notnull()]
-                df_unassigned=df[df['Molecular Formula'].isnull()]
-                assignedpeaks.append(len(df_assigned))
-                assignedpeaks_percent.append(len(df_assigned)/len(df)*100)
-                assignedintensity_percent.append(sum(df_assigned['Peak Height'])/sum(df['Peak Height'])*100)
+            # Extract the column as a numpy array
+            values = df_unassigned['Calibrated m/z'].values
+            # Calculate all pairwise differences
+            differences.append(np.round(np.subtract.outer(values, values), decimals).flatten())
 
-                # Extract the column as a numpy array
-                values = df_unassigned['Calibrated m/z'].values
-                # Calculate all pairwise differences
-                differences.append(np.round(np.subtract.outer(values, values), decimals).flatten())
-
-            summary=DataFrame({'Files': files, 
-                            'Total peaks':totalpeaks,
-                            'Assigned peaks':assignedpeaks,
-                            'Assigned peak percent':assignedpeaks_percent,
-                            'Assigned intensity percent':assignedintensity_percent
-                            })
+        summary=DataFrame({'Files': files, 
+                        'Total peaks':totalpeaks,
+                        'Assigned peaks':assignedpeaks,
+                        'Assigned peak percent':assignedpeaks_percent,
+                        'Assigned intensity percent':assignedintensity_percent
+                        })
             
-            summary.to_csv(Settings.assignments_directory+'summary.csv', index=False)
+        summary.to_csv(Settings.assignments_directory+'summary.csv', index=False)
 
-            if(differences):
-                # Count occurrences of each difference
-                unique_diffs, counts = np.unique(np.abs(np.concatenate(differences)), return_counts=True)
+        if(differences):
+            # Count occurrences of each difference
+            unique_diffs, counts = np.unique(np.abs(np.concatenate(differences)), return_counts=True)
+            diff_counts = DataFrame({'m/z diff':unique_diffs, 'counts':counts}).sort_values(ascending=False, by='counts')
+            diff_counts.head(200).to_csv(Settings.assignments_directory+'unassigned.csv', index=False)
 
-                diff_counts = DataFrame({'m/z diff':unique_diffs, 'counts':counts}).sort_values(ascending=False, by='counts')
-                diff_counts.head(200).to_csv(Settings.assignments_directory+'unassigned.csv', index=False)
+    def load_feature_list(self, fname = 'feature_list.csv'):
+        """
+        Method to load feature list from .csv file. The file should be in the directory defined in Parameters.Settings.assignments_directory.
+        """
+        self.feature_list = Features(self.sample_list)
+        self.feature_list.load_csv(fname)
+        self.feature_list_df = self.feature_list.feature_list_df

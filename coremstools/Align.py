@@ -1,17 +1,180 @@
-from numpy import mean, std
+from numpy import mean, std, sqrt, nan
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
-#import dask.dataframe as dd
-#from dask.diagnostics import ProgressBar
-#ProgressBar().register()
 
 from coremstools.Parameters import Settings
 
+import re 
 
 class Align:
 
-    def run(self, sample_list, include_dispersity = True):
+    def run(self, sample_list):
+        """
+        Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
+
+        Parameters 
+        ----------
+        sample_list : str
+            Dataframe containing sample list. Must contain 'File' column with the name of each Thermo .raw file in the dataset. 
+        """
+        assignments_dir = Settings.assignments_directory
+
+        shared_columns_def = ['Time', 'Molecular Formula', 'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class', 'Heteroatom Class']
+        
+        averaged_cols = ['m/z',
+                             'm/z Error (ppm)',
+                             'Calibrated m/z',
+                             'Resolving Power',
+                             'Confidence Score',
+                             'm/z Error Score',
+                             'Isotopologue Similarity',
+                             'S/N',
+                             'Dispersity',
+                             'Retention Time']
+        
+        all_dfs = []
+        
+        print('Reading and preprocessing files...')
+        for file_path_suffix in tqdm(sample_list['File'], desc="Processing files"):
+            file_name_no_ext = file_path_suffix.split('.')[0]
+            full_file_path = f"{assignments_dir}{file_name_no_ext}.csv"
+
+            try:
+                df = pd.read_csv(full_file_path)
+            except FileNotFoundError:
+                print(f"Warning: File not found {full_file_path}, skipping.")
+                continue
+
+            df = df[df['Molecular Formula'].notnull()].copy()
+            if df.empty:
+                continue
+
+            df['feature'] = df['Time'].astype(str) + '--' + df['Molecular Formula']
+            df['file_name_for_pivot'] = 'Intensity: ' + file_name_no_ext
+            all_dfs.append(df)
+
+        if not all_dfs:
+            print("No data to process after reading files.")
+            return pd.DataFrame()
+
+        print('Concatenating data...')
+        concatenated_df = pd.concat(all_dfs, ignore_index=True)
+        
+        # Determine actual element columns based on formulas and presence in DataFrame
+        unique_mf_series = concatenated_df['Molecular Formula'].drop_duplicates()
+        parsed_elements_from_formulas = set()
+        element_parser_re = re.compile(r'(\d*[A-Z][a-z]?)') # Parses elements including isotopes (e.g., C, 13C, Cl, 35Cl)
+        for mf_str in unique_mf_series:
+            if pd.notna(mf_str):
+                parsed_elements_from_formulas.update(element_parser_re.findall(mf_str))
+        
+        actual_element_cols = sorted([el for el in parsed_elements_from_formulas if el in concatenated_df.columns])
+        
+        print('Grouping and aggregating data...')
+        grouped = concatenated_df.groupby('feature')
+        agg_funcs = {}
+
+        #First, create columns for shared columns and actual element columns
+        for col in shared_columns_def:
+            if col in concatenated_df.columns: agg_funcs[col] = 'first'
+        for col in actual_element_cols:
+            if col in concatenated_df.columns: agg_funcs[col] = 'first'
+
+        # Now, handle averaged columns
+        averaged_cols_def = [col for col in averaged_cols if col in concatenated_df.columns]
+
+        for col in averaged_cols_def:
+            if col in concatenated_df.columns:
+                # Only add 'mean' and 'std' aggregations here
+                agg_funcs[col] = ['mean', 'std']
+
+        if not agg_funcs and 'feature' in concatenated_df:
+            aggregated_df = pd.DataFrame(index=concatenated_df['feature'].unique())
+        elif not agg_funcs:
+            print("No data to aggregate.")
+            return pd.DataFrame()
+        else:
+            aggregated_df = grouped.agg(agg_funcs)
+            aggregated_df.columns = ['_'.join(col).strip('_') for col in aggregated_df.columns.values]
+
+        # Create 'N Samples' column using grouped.size()
+        aggregated_df['N Samples'] = grouped.size()
+
+        # Create Standard error columns
+
+        for col in averaged_cols_def:
+            std_col = col + '_std'
+            se_col = col + '_se'
+            if std_col in aggregated_df.columns and 'N Samples' in aggregated_df.columns:
+                n_samples = aggregated_df['N Samples']
+                aggregated_df[se_col] = aggregated_df[std_col] / sqrt(n_samples)
+
+        rename_map = {}
+
+        for col in shared_columns_def:
+            processed_name = col + '_first'
+            if processed_name in aggregated_df.columns:
+                rename_map[processed_name] = col
+        for col in actual_element_cols:
+            processed_name = col + '_first'
+            if processed_name in aggregated_df.columns:
+                rename_map[processed_name] = col
+        for col in averaged_cols_def:
+            processed_name = col + '_mean'
+            if processed_name in aggregated_df.columns:
+                rename_map[processed_name] = col
+
+        aggregated_df.rename(columns=rename_map, inplace=True)
+
+        print('Getting intensities...')
+        intensity_df = concatenated_df.pivot_table(index='feature', 
+                                                   columns='file_name_for_pivot', 
+                                                   values='Peak Height', 
+                                                   fill_value=0)
+
+        print('Joining aggregated data with intensities...')
+
+        final_df = aggregated_df.join(intensity_df.astype(int), how='left')
+
+        # Reorder columns to have shared columns, averaged columns, element columns, and then intensities
+        ordered_cols_list = []
+        for col in shared_columns_def:
+            if col in aggregated_df.columns: # Check if the renamed column exists in aggregated_df
+                ordered_cols_list.append(col)
+        
+        
+        # 2. Averaged columns (now renamed mean, std, se)
+        for col in averaged_cols_def:
+            mean_col = col
+            std_col = col + '_std'
+            se_col = col + '_se'
+            if mean_col in aggregated_df.columns: ordered_cols_list.append(mean_col)
+            #if std_col in aggregated_df.columns: ordered_cols_list.append(std_col)
+            if se_col in aggregated_df.columns: ordered_cols_list.append(se_col)
+
+        # 3. Element columns (now renamed)
+        for col in actual_element_cols:
+            if col in aggregated_df.columns: # Check if the renamed column exists in aggregated_df
+                ordered_cols_list.append(col)
+
+        # 4. N Samples and Intensity columns
+        if 'N Samples' in aggregated_df.columns: ordered_cols_list.append('N Samples')
+
+        ordered_cols_list.extend(sorted(intensity_df.columns.tolist()))
+
+        # Ensure the final DataFrame only contains the columns in the ordered list
+        ordered_cols_list_present = [col for col in ordered_cols_list if col in final_df.columns]
+        # Reindex final_df to the desired order
+        final_df = final_df[ordered_cols_list_present]
+
+        # Fill NaN values with 0
+        final_df = final_df.fillna(0)
+
+        print('Alignment finished.')
+        return final_df
+    
+    def run_legacy(self, sample_list, include_dispersity = True):
         """
         Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
 
@@ -64,7 +227,8 @@ class Align:
                     'Confidence Score',
                     'm/z Error Score',
                     'Isotopologue Similarity',
-                    'S/N']
+                    'S/N',
+                    'Retention Time']
 
         print('Running alignment on ...')
                 
@@ -150,126 +314,3 @@ class Align:
         results_df = results_df[final_col_list]
         
         return(results_df)
-
-
-    def Align_exp(self, sample_list, include_dispersity = True):
-        """
-        Method for assembling an aligned feature list. The aligned feature list is a dataframe containing a row for each [molecular formula]-[retention time] pair (what we call a feature) in the entire dataset. The dataframe contains the intensity of each feature in each sample in the data, as well as the average and stdev of each of the following parameters: measured m/z of the feature; calibrated m/z of the feature; resolving power of the instrument at the measured m/z; m/z error score; istopologue similarity score; confidence score; S/N; and dispersity. 
-
-        Parameters 
-        ----------
-        sample_list : str
-            Dataframe containing sample list. Must contain 'File' column with the name of each Thermo .raw file in the dataset. 
-        """
-        def ensure_same_columns(list_sample_csv):
-            
-            all_cols = []
-            correct_order = []
-            rewrite = False
-            first = True 
-            for sample_csv in list_sample_csv:
-                sample_cols = list(pd.read_csv(sample_csv).columns)
-                if len(sample_cols) > len(correct_order):
-
-                    correct_order = sample_cols
-
-                temp = [col for col in sample_cols if col not in all_cols]
-
-                if (len(temp) > 0) & (not first):
-                    rewrite = True      
-                
-                first = False
-                all_cols = all_cols + temp
-            
-            temp_order = [c for c in correct_order if (c != 'Time') & (c != 'file') & ('Unnamed' not in c)]
-            correct_order = ['file', 'Time'] + temp_order 
-
-            if rewrite:
-                #print('\trewriting with updated order')
-                for sample_csv in list_sample_csv:
-                    
-                    sample_temp = pd.read_csv(sample_csv)
-                    
-                    for col in all_cols:
-                        
-                        if col not in sample_temp.columns:
-                            
-                            sample_temp[col] = np.nan
-                    
-                    sample_temp = sample_temp[correct_order]
-                    sample_temp.to_csv(sample_csv, index=False)
-            
-        #print('running alignment...')
-
-        assignments_dir = Settings.assignments_directory
-        
-        list_sample_csv = [assignments_dir + f.replace('.raw', '.csv') for f in sample_list['File']]
-        #print('checking columns...')
-        ensure_same_columns(list_sample_csv)
-        
-        #shared_columns = ['Time', 'Molecular Formula','Molecular Class', 'Ion Charge', 'Calculated m/z', 'Heteroatom Class',  'DBE']
-        
-        shared_columns = ['file','Peak Height','Time', 'Molecular Formula', 'Ion Charge', 'Calculated m/z', 'DBE']
-
-        averaged_cols = ['m/z',
-                         'm/z Error (ppm)',
-                         'Calibrated m/z',
-                         'Resolving Power',
-                         'Confidence Score',
-                         'S/N',
-                         'Dispersity']
-        
-        glob_str = assignments_dir + '*' +  '.csv'
-
-        all_results_read = dd.read_csv(list_sample_csv)
-
-        all_results_shrink = all_results_read[all_results_read['Molecular Formula'].notnull()]
-        
-        def add_feature(row):
-
-            z = str(row['Time']) + '--' + row['Molecular Formula'] 
-            return z
-        
-        all_results_shrink['feature'] = all_results_shrink.apply(add_feature, axis = 1) #['Molecular Formula'] + '--' + str(all_results_shrink['Time'])
-        
-        #print('resetting index...')
-        all_results = all_results_shrink.set_index('feature', sort = False)
-
-        averaged_params = all_results[averaged_cols]
-
-        averaged = averaged_params.groupby(by='feature').mean()
-
-        stdev = averaged_params.groupby(by='feature').std()
-
-        joined = averaged.join(stdev,lsuffix = '_mean', rsuffix = '_se')
-
-        shared = all_results[shared_columns]
-        
-        joined = joined.join(shared)
-              
-        #print('assembling intensities...')
-        flist = list(sample_list['File'])
-        def assemble_intensities(group):
-            file_keys = [f.split('/')[-1] for f in list(group['file'])]
-            peak_heights = list(group['Peak Height'])
-            missing = [f for f in flist if f not in file_keys]
-            add_dict = {m:0 for m in missing}
-            int_dict = {k : int(i) for k, i in zip(file_keys, peak_heights)}
-            full_dict = {**int_dict, **add_dict}
-            for f in flist:
-                group[f] = full_dict[f]
-            return group
-        
-        feature_groups = joined.groupby('feature').apply(assemble_intensities)
-        
-        n_samples = feature_groups.groupby(by='feature').size()
-        n_samples = n_samples.rename('N Samples')
-
-        joined2 = feature_groups.join(n_samples.to_frame(name='N Samples'))
-        joined3 = joined2.groupby(joined2.index).first() #  [last(joined2.index.drop_duplicates())]
-
-        final_col_list = [ f + '_mean' for f in averaged_cols] + [ f + '_se' for f in averaged_cols] + ['N Samples']
-        final_col_list = shared_columns + final_col_list
-        final_col_list = [f for f in final_col_list if (f != 'file') & (f != 'Peak Height')] + flist
-        return joined3[final_col_list]
-        

@@ -61,7 +61,7 @@ def assign_formula(file, times, refmasslist=None):
 																		'Na': 1
                                                                         }
         '''	
-		SearchMolecularFormulas(mass_spectrum, first_hit=True).run_worker_mass_spectrum()
+		SearchMolecularFormulas(mass_spectrum).run_worker_mass_spectrum()
 		mass_spectrum.percentile_assigned(report_error=True)
 		
 		assignments=mass_spectrum.to_dataframe()
