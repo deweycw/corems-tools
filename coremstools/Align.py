@@ -7,7 +7,7 @@ import pandas as pd
 #ProgressBar().register()
 
 from coremstools.Parameters import Settings
-
+from corems.encapsulation.constant import Atoms
 
 class Align:
 
@@ -42,7 +42,14 @@ class Align:
 
         assignments_dir = Settings.assignments_directory
 
-        shared_columns = ['Time','Molecular Formula',  'Calculated m/z', 'DBE', 'Is Isotopologue', 'Molecular Class' ,'Heteroatom Class']
+        shared_columns = ['Time',
+                          'Molecular Formula',  
+                          'Calculated m/z', 
+                          'DBE', 
+                          'Is Isotopologue', 
+                          'Molecular Class' ,
+                          'Heteroatom Class',
+                          'Adduct']
 
         averaged_cols = ['m/z',
                     'm/z Error (ppm)',
@@ -83,12 +90,14 @@ class Align:
             
             results = results[results['Molecular Formula'].notnull()]
             
+            #results['Adduct'].fillna('H',inplace=True)
+
             results['feature'] = list(zip(results['Time'],results['Molecular Formula']))
             
             file_name = file.replace('.csv','').split('/')[-1]
 
             masterresults['Intensity: '+file_name]={}
-            
+        
             pbar = tqdm(range(len(results)))
 
             for ix in pbar:
@@ -121,11 +130,13 @@ class Align:
                         masterresults[c][row['feature']] = [row[c]]
 
                 else:
+
                     masterresults['Intensity: ' + file_name][row['feature']] = int(row['Peak Height'])
                     
                     for c in averaged_cols:
-                        
+                            
                         masterresults[c][row.feature].append(row[c])
+
 
         print('  writing N Samples column')
 
@@ -136,7 +147,6 @@ class Align:
             masterresults['N Samples'][key] = len(masterresults['m/z'][key])
 
             for c in averaged_cols:
-
                 masterresults[c+'_se'][key] = std(masterresults[c][key]) / np.sqrt(masterresults['N Samples'][key])
                 masterresults[c][key] = mean(masterresults[c][key])
 
