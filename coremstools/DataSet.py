@@ -204,6 +204,7 @@ class DataSet(Features):
 
         self._check_for_feature_list()
         self.feature_list.run_alignment()
+        self.feature_list_df = self.feature_list.feature_list_df
 
 
     def run_consolidation(self, consolidate_var = 'Confidence Score'):
@@ -217,6 +218,7 @@ class DataSet(Features):
         '''        
         self._check_for_feature_list()
         self.feature_list.run_consolidation(consolidate_var)
+        self.feature_list_df = self.feature_list.feature_list_df
 
 
     def run_holistic_mz_error_filter(self):
@@ -225,6 +227,7 @@ class DataSet(Features):
         '''
         self._check_for_feature_list()
         self.feature_list.flag_errors()
+        self.feature_list_df = self.feature_list.feature_list_df
 
 
     def flag_blank_features(self):
@@ -233,6 +236,7 @@ class DataSet(Features):
         '''
         self._check_for_feature_list()
         self.feature_list.flag_blank_features()
+        self.feature_list_df = self.feature_list.feature_list_df
 
 
     def calc_stoichiometric_classifications(self):
@@ -241,6 +245,7 @@ class DataSet(Features):
         '''
         self._check_for_feature_list()
         self.feature_list.stoichiometric_classification()
+        self.feature_list_df = self.feature_list.feature_list_df
     
 
     def export_feature_list(self, fname = 'feature_list.csv'):

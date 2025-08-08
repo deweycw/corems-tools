@@ -20,9 +20,12 @@ class Consolidate:
             features_df (pd.DataFrame): DataFrame containing the features to be consolidated.
 
         Note:
-            The `consolidation_width` (e.g., "2sigma", "1sigma", "fwhm") and 
-            `min_samples` (minimum 'N Samples' for a primary candidate) parameters 
-            are taken from `coremstools.Parameters.Settings`.
+            Several parameters are taken from 'coremstools.Parameters.Settings'. 
+            'consolidation_width` ("2sigma", "1sigma", "fwhm") determines the m/z range for consolidation. Default is 'fwhm'.
+            'min_samples` defines the minimum number of samples required to keep a feature in the feature list. Default is 1.
+            'output_score_method` - determines how the scores of features in a consolidated group are combined.
+              summation if (output_score_method != 'all')) parameter. Max intensity of all features in consolidated group if (output_score_method == 'all').
+              Default is 'prob score'.
 
         Returns:
             pd.DataFrame: The DataFrame with added/updated columns:
@@ -33,7 +36,13 @@ class Consolidate:
         """
         consolidation_width=Settings.consolidation_width 
         min_samples=Settings.consolidation_min_samples
+        output_score_method=Settings.output_score_method
         
+        if (output_score_method == 'all'):
+            print('Using maximum intensity of all features in consolidated group')
+        else:
+            print('Using summed intensity of all features in consolidated group')
+            
         # Initialize new columns in the features DataFrame
         features_df['consolidated'] = 0
         features_df['consolidated flag'] = 0
@@ -74,7 +83,9 @@ class Consolidate:
                 mrange = [mass - dm, mass + dm]
 
                 # Find features within the m/z range and at the same retention time
+                # Note, this allows for one group to 'steal' features from another consolidated id group, but this is not a problem as the consolidated flag will be set to 1 for all features in the group.
                 matches = features_df[(features_df['Calibrated m/z'] > mrange[0]) & (features_df['Calibrated m/z'] < mrange[1]) & (features_df['Time'] == time)]
+                
                 
                 if(len(matches.index) > 1):
                     
@@ -83,12 +94,17 @@ class Consolidate:
                     features_df.loc[matches.index, 'consolidated id'] = gf_id
                     gf_id = gf_id + 1
 
-                    # Sum the intensities of all matched features across all intensity columns
-                    matches_sum = matches.filter(regex='Intensity').sum(axis=0)
+                    if (output_score_method == 'all'):
+                        # Take the maximum intensity of all matched features across all intensity columns
+                        matches_intense = matches.filter(regex='Intensity').max(axis=0)
+
+                    else:
+                        # Sum the intensities of all matched features across all intensity columns
+                        matches_intense = matches.filter(regex='Intensity').sum(axis=0)
 
                     # Update the intensity columns for all matched features with the summed intensities
-                    features_df.loc[matches.index, intensity_cols] = matches_sum.to_numpy()
-                    
+                    features_df.loc[matches.index, intensity_cols] = matches_intense.to_numpy()
+
                     # Filter matches to find those that meet the min_samples criteria
                     matches_highn = matches[matches['N Samples'] >= min_samples]
 
@@ -122,6 +138,7 @@ class Consolidate:
                         features_df.loc[matches.index, 'consolidated flag'] = 1
 
         return features_df 
+    
     
     def GapFill_experimental(self, features_ddf):
         

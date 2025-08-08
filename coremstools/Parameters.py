@@ -45,5 +45,6 @@ class Settings:
     std_time_range = [0,20]
     blank_sample_list = []
     alignment_legacy: bool = False
-    consolidation_width: str = "2sigma" # "2sigma", "1sigma", or 'fwhm'
+    consolidation_width: str = "fwhm" # "2sigma", "1sigma", or 'fwhm'
     consolidation_min_samples: int = 1 
+    output_score_method='prob score'
